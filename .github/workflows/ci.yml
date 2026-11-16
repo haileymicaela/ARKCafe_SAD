@@ -26,7 +26,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: pytest            # swap per framework table below
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test
 
   deploy:
     needs: test
