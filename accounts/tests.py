@@ -68,3 +68,13 @@ class LoginTests(TestCase):
         response = self.client.post(reverse("logout"))
         self.assertRedirects(response, reverse("login"))
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_staff_cannot_open_admin_pages(self):
+        self.client.force_login(self.staff)
+        response = self.client.get(reverse("admin_dashboard"))
+        self.assertRedirects(response, reverse("staff_dashboard"))
+
+    def test_admin_cannot_open_staff_pages(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("staff_dashboard"))
+        self.assertRedirects(response, reverse("admin_dashboard"))
