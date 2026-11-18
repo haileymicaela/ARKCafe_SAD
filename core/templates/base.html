@@ -24,7 +24,7 @@
 
     <!-- ================= SIDEBAR LOGIC ================= -->
     <nav id="sidebar">
-        {% if 'staff' in request.path %}
+        {% if request.user.role == 'staff' %}
             {% include 'staff_sidebar.html' %}
         {% else %}
             {% include 'admin_sidebar.html' %}
@@ -46,7 +46,7 @@
                 <ol class="breadcrumb">
                     <!-- This changes Admin to QA/QC -->
                     <li class="breadcrumb-item">
-                        {% if 'staff' in request.path %}QA/QC{% else %}Admin{% endif %}
+                        {% if request.user.role == 'staff' %}QA/QC{% else %}Admin{% endif %}
                     </li>
                     <!-- This changes the page name -->
                     <li class="breadcrumb-item active" aria-current="page">
@@ -67,35 +67,16 @@
             <!-- User Profile Avatar (Dynamic) -->
             <div class="topbar-right">
                 <div class="user-avatar">
-                    {% if 'staff' in request.path %}Q{% else %}A{% endif %}
+                    {{ request.user.full_name|slice:":1"|upper }}
                 </div>
                 <span class="user-role d-none d-sm-block">
-                    {% if 'staff' in request.path %}QA/QC Personnel{% else %}Admin{% endif %}
+                    {{ request.user.full_name }}
                 </span>
             </div>
         </header>
 
         <!-- Dynamic Page Content -->
         <main class="content-wrapper">
-            
-                        <!-- TEMPORARY TESTING TOGGLE -->
-            <div class="alert alert-warning py-2 mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 shadow-sm">
-                <span><strong>Testing:</strong> Click buttons to switch roles.</span>
-                <div>
-                    <!-- If on Admin page, button is filled. If on Staff, it is outlined. -->
-                    <a href="/admin-dashboard/" 
-                       class="btn btn-sm {% if 'staff' not in request.path %}btn-dark{% else %}btn-outline-dark{% endif %}">
-                       Admin Side
-                    </a>
-                    
-                    <!-- If on Staff page, button is filled. If on Admin, it is outlined. -->
-                    <a href="/staff-dashboard/" 
-                       class="btn btn-sm {% if 'staff' in request.path %}btn-dark{% else %}btn-outline-dark{% endif %}">
-                       QA/QC Side
-                    </a>
-                </div>
-            </div>
-
             <!-- Page Header -->
             <div class="page-header d-flex justify-content-between align-items-start mb-4">
                 <div>
@@ -114,7 +95,7 @@
                     </h1>
                     <!-- Dynamic Subtitle -->
                     <p class="text-muted">
-                        {% if 'staff' in request.path %}
+                        {% if request.user.role == 'staff' %}
                             View open and closed NCR counts
                         {% else %}
                             System overview of NCRs, user accounts, and projects
