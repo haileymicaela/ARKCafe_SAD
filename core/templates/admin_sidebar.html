@@ -1,0 +1,53 @@
+<div class="sidebar-brand">
+    <div class="logo-text">crimson</div>
+    <div class="system-name">NCR Tracking System</div>
+</div>
+
+<!-- Close button for mobile -->
+<button id="closeSidebar" class="btn btn-link text-white d-md-none position-absolute top-0 end-0 mt-3 me-3 text-decoration-none">
+    <i class="bi bi-x-lg fs-5"></i>
+</button>
+
+<div class="sidebar-nav">
+    <!-- Dashboard -->
+    <a href="{% url 'admin_dashboard' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <i class="bi bi-grid-fill"></i> Dashboard
+    </a>
+    
+    <!-- Projects -->
+    <a href="{% url 'admin_projects' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_projects' %}active{% endif %}">
+        <i class="bi bi-folder2"></i> Projects
+    </a>
+    
+    <!-- Departments -->
+    <a href="{% url 'admin_departments' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_departments' %}active{% endif %}">
+        <i class="bi bi-building"></i> Departments
+    </a>
+    
+    <!-- User Accounts -->
+    <a href="{% url 'admin_users' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+        <i class="bi bi-person-gear"></i> User Accounts
+    </a>
+    
+    <!-- Alert Recipients -->
+    <a href="{% url 'admin_recipients' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_recipients' %}active{% endif %}">
+        <i class="bi bi-person-lines-fill"></i> Alert Recipients
+    </a>
+    
+    <!-- Audit History -->
+    <a href="{% url 'admin_audit' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_audit' %}active{% endif %}">
+        <i class="bi bi-clock-history"></i> Audit History
+    </a>
+</div>
+
+<div class="sidebar-footer">
+    <a href="#" class="nav-link">
+        <i class="bi bi-box-arrow-left"></i> Log Out
+    </a>
+</div>
