@@ -1,0 +1,74 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ 
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log In | Crimson NCR</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
+  <script src="{% static 'accounts/js/login.js' %}" defer></script>
+</head>
+
+<body class="login-page">
+  <main class="login-card">
+    <div class="logo" role="img" aria-label="Crimson NCR">crimson</div>
+
+    <h1>Log In</h1>
+    <p class="subtitle">QA/QC NCR Tracking System</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <p class="error" role="alert">
+          Incorrect email or password. Please try again.
+        </p>
+      {% endif %}
+
+      <label class="sr-only" for="{{ form.username.id_for_label }}">Email</label>
+      {{ form.username }}
+
+      <label class="sr-only" for="{{ form.password.id_for_label }}">Password</label>
+
+      <div class="password-field">
+        {{ form.password }}
+
+        <button
+          type="button"
+          id="toggle-password"
+          class="toggle"
+          aria-label="Show password"
+          aria-pressed="false"
+          aria-controls="{{ form.password.id_for_label }}"
+        >
+          <svg class="icon-show" viewBox="0 0 24 24" width="20" height="20"
+               fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+
+          <svg class="icon-hide" viewBox="0 0 24 24" width="20" height="20"
+               fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true" hidden>
+            <path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5.06-5.94"/>
+            <path d="M9.9 5.24A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a19.8 19.8 0 0 1-3.17 4.19"/>
+            <path d="M1 1l22 22"/>
+            <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+          </svg>
+        </button>
+      </div>
+
+      <button type="submit" class="submit">Log In</button>
+    </form>
+  </main>
+</body>
+</html>
