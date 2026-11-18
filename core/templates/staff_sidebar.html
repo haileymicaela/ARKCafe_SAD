@@ -1,0 +1,53 @@
+<div class="sidebar-brand">
+    <div class="logo-text">crimson</div>
+    <div class="system-name">NCR Tracking System</div>
+</div>
+
+<!-- Close button for mobile -->
+<button id="closeSidebar" class="btn btn-link text-white d-md-none position-absolute top-0 end-0 mt-3 me-3 text-decoration-none">
+    <i class="bi bi-x-lg fs-5"></i>
+</button>
+
+<div class="sidebar-nav">
+    <!-- Dashboard -->
+    <a href="{% url 'staff_dashboard' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+        <i class="bi bi-grid-fill"></i> Dashboard
+    </a>
+    
+    <!-- NCR Records -->
+    <a href="{% url 'staff_records' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_records' %}active{% endif %}">
+        <i class="bi bi-file-earmark-text"></i> NCR Records
+    </a>
+    
+    <!-- Create NCR -->
+    <a href="{% url 'staff_create_ncr' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_create_ncr' %}active{% endif %}">
+        <i class="bi bi-plus-lg"></i> Create NCR
+    </a>
+    
+    <!-- Alert Recipients -->
+    <a href="{% url 'staff_recipients' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_recipients' %}active{% endif %}">
+        <i class="bi bi-person"></i> Alert Recipients
+    </a>
+    
+    <!-- Export -->
+    <a href="{% url 'staff_export' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_export' %}active{% endif %}">
+        <i class="bi bi-download"></i> Export
+    </a>
+    
+    <!-- Audit History -->
+    <a href="{% url 'staff_audit' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_audit' %}active{% endif %}">
+        <i class="bi bi-clock"></i> Audit History
+    </a>
+</div>
+
+<div class="sidebar-footer">
+    <a href="#" class="nav-link">
+        <i class="bi bi-box-arrow-left"></i> Log Out
+    </a>
+</div>
