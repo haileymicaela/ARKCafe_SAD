@@ -1,14 +1,4 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
-
-
-@login_required
-def home(request):
-    """Sends the user to the right dashboard after login."""
-    user = request.user
-    is_admin = user.is_superuser or str(getattr(user, "role", "")).upper() == "ADMIN"
-    return redirect("admin_dashboard" if is_admin else "staff_dashboard")
 
 # --- Admin Views ---
 def admin_dashboard(request):
