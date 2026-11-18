@@ -3,8 +3,8 @@ from django.views.generic import RedirectView # <-- Add this import
 from . import views
 
 urlpatterns = [
-    # ROOT URL: Automatically redirects to the admin dashboard
-    path('', RedirectView.as_view(url='/admin-dashboard/', permanent=False)),
+    # ROOT URL: redirects to login (logged-in users are then sent on to their dashboard)
+    path('', RedirectView.as_view(pattern_name='login', permanent=False)),
 
     # Admin URLs
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
