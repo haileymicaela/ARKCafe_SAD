@@ -39,11 +39,11 @@
     <div class="{% if not is_staff %}col-12 col-lg-8{% else %}col-12{% endif %}">
         <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
             <h5 class="fw-bold mb-3">NCR Counts by Cause</h5>
-            <div class="dashboard-chart"><canvas id="causeChart"></canvas></div>
+            <div class="dashboard-chart" id="causeChart"></div>
         </div>
         <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
             <h5 class="fw-bold mb-3">NCR Counts by Project</h5>
-            <div class="dashboard-chart"><canvas id="projectChart"></canvas></div>
+            <div class="dashboard-chart" id="projectChart"></div>
             <div class="text-muted mt-3 small">Showing 1–{{ project_data|length }} of {{ active_projects }} Projects</div>
         </div>
     </div>
@@ -80,33 +80,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const causeData = JSON.parse('{{ cause_data|safe|escapejs }}');
-        const projectData = JSON.parse('{{ project_data|safe|escapejs }}');
-
-        function buildChart(ctx, labels, openData, closedData) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Open', data: openData, backgroundColor: '#68161D', barPercentage: 0.7 },
-                        { label: 'Closed', data: closedData, backgroundColor: '#D18B8F', barPercentage: 0.7 }
-                    ]
-                },
-                options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        x: { stacked: true, display: false },
-                        y: { stacked: true, grid: { display: false }, ticks: { font: {size: 13} } }
-                    },
-                    plugins: { legend: { position: 'top', align: 'start', labels: { usePointStyle: true, boxWidth: 8 } } }
-                }
-            });
-        }
-        buildChart(document.getElementById('causeChart').getContext('2d'), causeData.map(d => d.cause), causeData.map(d => d.open), causeData.map(d => d.closed));
-        buildChart(document.getElementById('projectChart').getContext('2d'), projectData.map(d => d.project), projectData.map(d => d.open), projectData.map(d => d.closed));
-    });
-</script>
+{{ cause_data|json_script:"cause-chart-data" }}
+{{ project_data|json_script:"project-chart-data" }}
+<script src="{% static 'reports/js/dashboard_charts.js' %}?v=dashboard-svg-1" defer></script>
 {% endblock %}

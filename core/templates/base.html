@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if request.resolver_match.url_name == 'staff_audit_history' or request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'admin_audit' or request.resolver_match.url_name == 'staff_audit' %}Audit History{% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log{% elif request.resolver_match.url_name == 'staff_export' %}Export{% elif request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}Dashboard{% else %}Crimson NCR{% endif %} - Crimson NCR</title>
+    <title>{% if request.resolver_match.url_name == 'staff_audit_history' or request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'admin_audit' or request.resolver_match.url_name == 'staff_audit' %}Audit History{% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log{% elif request.resolver_match.url_name == 'staff_export' %}Export NCR{% elif request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}Dashboard{% else %}Crimson NCR{% endif %} - Crimson NCR</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +68,7 @@
                         {% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log
                         {% elif request.resolver_match.url_name == 'staff_records' %}NCR Records
                         {% elif request.resolver_match.url_name == 'staff_create_ncr' %}Create NCR
-                        {% elif request.resolver_match.url_name == 'staff_export' %}Export
+                        {% elif request.resolver_match.url_name == 'staff_export' %}Export NCR
                         {% else %}Dashboard{% endif %}
                     </li>
                 </ol>
@@ -101,12 +101,14 @@
                         {% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log
                         {% elif request.resolver_match.url_name == 'staff_records' %}NCR Records
                         {% elif request.resolver_match.url_name == 'staff_create_ncr' %}Create NCR
-                        {% elif request.resolver_match.url_name == 'staff_export' %}Export
+                        {% elif request.resolver_match.url_name == 'staff_export' %}Export NCR
                         {% else %}Dashboard{% endif %}
                     </h1>
                     <!-- Dynamic Subtitle -->
                     <p class="text-muted">
-                        {% if request.resolver_match.url_name == 'admin_recent_activity' %}
+                        {% if request.resolver_match.url_name == 'staff_export' %}
+                            Download NCR records as an Excel list or a single PDF report.
+                        {% elif request.resolver_match.url_name == 'admin_recent_activity' %}
                             User accounts, projects, departments, and alert recipients
                         {% elif request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'staff_audit_history' %}
                             Log a new non-conformance report after an inspection finding.
