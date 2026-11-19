@@ -7,7 +7,7 @@ from core.models import Department, NcrRecord, Project
 
 from .services import allowed_next
 
-MAX_FILES = 5
+MAX_FILES = 15
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".doc", ".docx", ".xls", ".xlsx"}
 
@@ -24,11 +24,6 @@ class BootstrapMixin:
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
-    
-    # Idinagdag natin ito para laging naka-set ang 'multiple' attribute
-    def __init__(self, attrs=None):
-        super().__init__(attrs)
-        self.attrs['multiple'] = True
 
 
 class MultipleFileField(forms.FileField):
@@ -46,7 +41,7 @@ class MultipleFileField(forms.FileField):
 class NcrForm(BootstrapMixin, forms.ModelForm):
     attachments = MultipleFileField(
         required=False,
-        help_text="Up to 5 files, 5 MB each (PDF, images, Word, Excel).",
+        help_text="Up to 15 files, 5 MB each (PDF, images, Word, Excel).",
     )
 
     class Meta:
