@@ -3,11 +3,6 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
 
-<div class="mb-4">
-    <h1 class="fw-bold mb-1">Export NCR</h1>
-    <p class="text-muted">Download NCR records as an Excel list or a single PDF report.</p>
-</div>
-
 <div class="mb-4 d-flex gap-2">
     <button class="btn text-white fw-semibold px-4" style="background-color: #68161D;" id="tab-excel" onclick="switchTab('excel')">NCR List (Excel)</button>
     <button class="btn btn-outline-secondary bg-white fw-semibold px-4" id="tab-pdf" onclick="switchTab('pdf')">Single NCR (PDF)</button>

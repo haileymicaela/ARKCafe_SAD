@@ -3,9 +3,9 @@ from . import views
 
 urlpatterns = [
     # Admin Routes
-    path('admin/dashboard/', views.dashboard_view, name='admin_dashboard'),
-    path('admin/audit-history/', views.audit_history_view, name='admin_audit_history'),
-    path('admin/recent-activity/', views.recent_activity_view, name='admin_recent_activity'),
+    path('reports/admin/dashboard/', views.dashboard_view, name='admin_dashboard'),
+    path('reports/admin/audit-history/', views.audit_history_view, name='admin_audit_history'),
+    path('reports/admin/recent-activity/', views.recent_activity_view, name='admin_recent_activity'),
 
     # QA/QC Routes
     path('staff/dashboard/', views.dashboard_view, name='staff_dashboard'),

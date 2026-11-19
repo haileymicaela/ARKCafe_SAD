@@ -3,13 +3,6 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="fw-bold mb-1">Audit History</h1>
-        <p class="text-muted mb-0">{% if is_staff %}Complete, timestamped trail of every NCR creation and status change.{% else %}System-wide log of all status changes and user actions.{% endif %}</p>
-    </div>
-</div>
-
 <div class="card shadow-sm border-0 mb-4 p-3 rounded-3">
     <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
         <div class="input-group flex-grow-1" style="max-width: 500px;">
