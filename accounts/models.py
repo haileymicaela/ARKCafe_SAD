@@ -31,11 +31,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    """Maps to the `user_account` table.
-
-    department_id is intentionally omitted for now; it will be added as a
-    ForeignKey once the Department model exists.
-    """
+    """Maps to the `user_account` table."""
 
     ADMIN = "admin"
     STAFF = "staff"
@@ -46,6 +42,13 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True)
     # Django's `password` attribute, stored in the table's password_hash column.
     password = models.CharField("password", max_length=255, db_column="password_hash")
+    department = models.ForeignKey(
+        "core.Department",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        db_column="department_id",
+    )
     role = models.CharField(max_length=20, choices=ROLES, default=STAFF)
     is_active = models.BooleanField(default=True)
 
