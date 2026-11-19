@@ -24,6 +24,11 @@ class BootstrapMixin:
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
+    
+    # Idinagdag natin ito para laging naka-set ang 'multiple' attribute
+    def __init__(self, attrs=None):
+        super().__init__(attrs)
+        self.attrs['multiple'] = True
 
 
 class MultipleFileField(forms.FileField):
