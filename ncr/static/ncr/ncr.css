@@ -1,0 +1,18 @@
+/* NCR module styles - reuses the CSS variables from static/css/sidebar.css */
+.btn-crimson { background: var(--crimson-dark); border-color: var(--crimson-dark); color: #fff; }
+.btn-crimson:hover, .btn-crimson:focus { background: var(--crimson-light); border-color: var(--crimson-light); color: #fff; }
+.btn-outline-crimson { color: var(--crimson-dark); border-color: var(--crimson-dark); background: transparent; }
+.btn-outline-crimson:hover { background: var(--crimson-dark); color: #fff; }
+.ncr-card { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; }
+.ncr-card .card-title-bar { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: 600; }
+.ncr-table { margin-bottom: 0; font-size: 14px; }
+.ncr-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.ncr-table td { vertical-align: middle; }
+.form-control:focus, .form-select:focus { border-color: var(--crimson-light); box-shadow: 0 0 0 .2rem rgba(104, 22, 29, .15); }
+.badge-open { background: #FEF3C7; color: #92400E; }
+.badge-in_progress { background: #DBEAFE; color: #1E40AF; }
+.badge-resolved { background: #D1FAE5; color: #065F46; }
+.badge-cause { background: #E5E7EB; color: #374151; }
+.pagination .page-link { color: var(--crimson-dark); }
+.detail-label { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); font-weight: 600; }
+.history-item { border-left: 3px solid var(--border-color); padding-left: 14px; margin-bottom: 16px; }
