@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-1">Audit History</h1>
+        <p class="text-muted mb-0">{% if is_staff %}Complete, timestamped trail of every NCR creation and status change.{% else %}System-wide log of all status changes and user actions.{% endif %}</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 p-3 rounded-3">
+    <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="input-group flex-grow-1" style="max-width: 500px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+            <input type="text" name="q" class="form-control border-start-0" placeholder="Search by NCR no., user, or remarks..." value="{{ search_query }}">
+        </div>
+        <button type="submit" class="btn btn-outline-secondary px-4">Search</button>
+    </form>
+</div>
+
+<div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="py-3 px-4 text-muted fw-semibold">Date & Time</th>
+                    <th class="py-3 text-muted fw-semibold">NCR No.</th>
+                    <th class="py-3 text-muted fw-semibold">Old Status</th>
+                    <th class="py-3 text-muted fw-semibold">New Status</th>
+                    <th class="py-3 text-muted fw-semibold">Changed By</th>
+                    <th class="py-3 text-muted fw-semibold">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td class="px-4 text-muted small">{{ log.changed_at|date:"M d, Y - g:i A" }}</td>
+                    <td class="fw-semibold text-dark">{{ log.ncr.reference_no|default:"-" }}</td>
+                    <td>
+                        {% if not log.old_status %}<span class="badge rounded-pill bg-light text-secondary border px-3 py-2">N/A</span>
+                        {% elif log.old_status == 'open' %}<span class="badge badge-open rounded-pill px-3 py-2">Open</span>
+                        {% elif log.old_status == 'in_progress' %}<span class="badge badge-progress rounded-pill px-3 py-2">In Progress</span>
+                        {% elif log.old_status == 'resolved' %}<span class="badge badge-resolved rounded-pill px-3 py-2">Resolved</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if log.new_status == 'open' %}<span class="badge badge-open rounded-pill px-3 py-2"><span class="dot bg-danger me-1"></span>Open</span>
+                        {% elif log.new_status == 'in_progress' %}<span class="badge badge-progress rounded-pill px-3 py-2"><span class="dot bg-warning me-1"></span>In Progress</span>
+                        {% elif log.new_status == 'resolved' %}<span class="badge badge-resolved rounded-pill px-3 py-2"><span class="dot bg-success me-1"></span>Resolved</span>{% endif %}
+                    </td>
+                    <td class="text-muted small">{{ log.user.full_name }}</td>
+                    <td class="text-muted small">{{ log.remarks|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>No audit records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+        <small class="text-muted">Showing {{ page_obj.start_index|default:0 }}–{{ page_obj.end_index|default:0 }} of {{ page_obj.paginator.count|default:0 }} entries</small>
+        <div class="d-flex gap-2">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}" class="btn btn-sm btn-outline-secondary px-3">Prev</a>
+            {% else %}<button class="btn btn-sm btn-outline-secondary px-3" disabled>Prev</button>{% endif %}
+            
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}" class="btn btn-sm text-white px-3" style="background-color: #68161D;">Next</a>
+            {% else %}<button class="btn btn-sm text-white px-3" style="background-color: #68161D;" disabled>Next</button>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

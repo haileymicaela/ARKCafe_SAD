@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+
+<div class="row mb-4 g-3">
+    <div class="{% if is_staff %}col-md-6{% else %}col-md-3{% endif %}">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Total Open NCRs</p>
+            <h2 class="mb-1 fw-bold">{{ total_open }}</h2>
+            <small class="text-muted">across {{ active_projects }} projects</small>
+        </div>
+    </div>
+    <div class="{% if is_staff %}col-md-6{% else %}col-md-3{% endif %}">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Total Closed NCRs</p>
+            <h2 class="mb-1 fw-bold">{{ total_closed }}</h2>
+            <small class="text-muted">{{ total_closed|add:total_open|default:0 }} total NCRs</small>
+        </div>
+    </div>
+    {% if not is_staff %}
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Active Users</p>
+            <h2 class="mb-1 fw-bold">{{ active_users }}</h2>
+            <small class="text-muted">registered accounts</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Active Projects</p>
+            <h2 class="mb-1 fw-bold">{{ active_projects }}</h2>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-3">
+    <div class="{% if not is_staff %}col-lg-8{% else %}col-12{% endif %}">
+        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
+            <h5 class="fw-bold mb-3">NCR Counts by Cause</h5>
+            <div style="height: 250px;"><canvas id="causeChart"></canvas></div>
+        </div>
+        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
+            <h5 class="fw-bold mb-3">NCR Counts by Project</h5>
+            <div style="height: 250px;"><canvas id="projectChart"></canvas></div>
+            <div class="text-muted mt-3 small">Showing 1–{{ project_data|length }} of {{ active_projects }} Projects</div>
+        </div>
+    </div>
+
+    {% if not is_staff %}
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 mb-4 p-4 h-100 rounded-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Recent Activity</h5>
+                <a href="{% url 'admin_recent_activity' %}" class="text-decoration-none text-crimson">View all</a>
+            </div>
+            <div class="activity-feed">
+                {% for act in recent_activities %}
+                <div class="d-flex mb-3 pb-3 border-bottom position-relative">
+                    <div class="me-3 mt-1">
+                        {% if act.action_type == 'created' %}<span class="dot bg-success"></span>
+                        {% elif act.action_type == 'deleted' %}<span class="dot bg-danger"></span>
+                        {% else %}<span class="dot bg-primary"></span>{% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="mb-0 fw-semibold fs-6">{{ act.action_type|title }} {{ act.entity_type }}</p>
+                        <small class="text-muted">{{ act.entity_label }}<br>by {{ act.user.full_name }}</small>
+                    </div>
+                    <div class="text-end ms-2">
+                        <small class="text-muted text-nowrap">{{ act.created_at|date:"g:i A" }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const causeData = JSON.parse('{{ cause_data|safe|escapejs }}');
+        const projectData = JSON.parse('{{ project_data|safe|escapejs }}');
+
+        function buildChart(ctx, labels, openData, closedData) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Open', data: openData, backgroundColor: '#68161D', barPercentage: 0.7 },
+                        { label: 'Closed', data: closedData, backgroundColor: '#D18B8F', barPercentage: 0.7 }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, display: false },
+                        y: { stacked: true, grid: { display: false }, ticks: { font: {size: 13} } }
+                    },
+                    plugins: { legend: { position: 'top', align: 'start', labels: { usePointStyle: true, boxWidth: 8 } } }
+                }
+            });
+        }
+        buildChart(document.getElementById('causeChart').getContext('2d'), causeData.map(d => d.cause), causeData.map(d => d.open), causeData.map(d => d.closed));
+        buildChart(document.getElementById('projectChart').getContext('2d'), projectData.map(d => d.project), projectData.map(d => d.open), projectData.map(d => d.closed));
+    });
+</script>
+{% endblock %}

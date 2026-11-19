@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+
+<div class="mb-4">
+    <h1 class="fw-bold mb-1">Export NCR</h1>
+    <p class="text-muted">Download NCR records as an Excel list or a single PDF report.</p>
+</div>
+
+<div class="mb-4 d-flex gap-2">
+    <button class="btn text-white fw-semibold px-4" style="background-color: #68161D;" id="tab-excel" onclick="switchTab('excel')">NCR List (Excel)</button>
+    <button class="btn btn-outline-secondary bg-white fw-semibold px-4" id="tab-pdf" onclick="switchTab('pdf')">Single NCR (PDF)</button>
+</div>
+
+<form method="POST" action="{% url 'staff_export' %}" id="exportForm">
+    {% csrf_token %}
+    <input type="hidden" name="export_type" id="export_type" value="excel">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- EXCEL SECTION -->
+            <div id="section-excel" class="card shadow-sm border-0 p-4 rounded-3">
+                <h5 class="fw-bold mb-4">Export filters</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold text-muted small">Project *</label>
+                        <select class="form-select" name="project">
+                            <option value="">All projects</option>
+                            {% for p in projects %}<option value="{{ p.project_id }}">{{ p.project_name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-muted small">Cause *</label>
+                        <select class="form-select" name="cause">
+                            <option value="">All Causes</option>
+                            <option value="material">Material</option><option value="workmanship">Workmanship</option><option value="sequencing">Sequencing</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-muted small">Status *</label>
+                        <select class="form-select" name="status">
+                            <option value="">All statuses</option>
+                            <option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-muted small">Date raised - from *</label>
+                        <input type="date" class="form-control" name="start_date">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-muted small">Date raised - to *</label>
+                        <input type="date" class="form-control" name="end_date">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF SECTION -->
+            <div id="section-pdf" class="card shadow-sm border-0 p-4 rounded-3 d-none">
+                <h5 class="fw-bold mb-4">Select NCR</h5>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-muted small">NCR *</label>
+                    <select class="form-select" name="single_ncr">
+                        <option value="">Select an NCR...</option>
+                        {% for n in ncrs %}<option value="{{ n.ncr_id }}">{{ n.reference_no }} - {{ n.subject|truncatechars:40 }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 p-4 rounded-3 h-100">
+                <h5 class="fw-bold mb-4">Export Summary</h5>
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3"><span class="text-muted">Format</span><span class="fw-semibold" id="summary_format">Excel (.xlsx)</span></div>
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3"><span class="text-muted" id="summary_records_label">Records</span><span class="fw-semibold" id="summary_records_val">{{ total_records }} NCRs</span></div>
+                <button type="submit" class="btn text-white w-100 py-2 fw-semibold mt-auto" style="background-color: #68161D;" id="btn-submit">Export to Excel</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg text-center p-4 rounded-4">
+      <div class="modal-body">
+        <div class="mx-auto bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; color: #198754;"><i class="bi bi-check-lg fs-2"></i></div>
+        <h4 class="fw-bold mb-2">Export Ready</h4>
+        <p class="text-muted mb-4">Your file was generated from the current filters.</p>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light border w-50" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn text-white w-50" style="background-color: #68161D;">Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function switchTab(type) {
+        const btnExcel = document.getElementById('tab-excel');
+        const btnPdf = document.getElementById('tab-pdf');
+        const secExcel = document.getElementById('section-excel');
+        const secPdf = document.getElementById('section-pdf');
+        const sumFormat = document.getElementById('summary_format');
+        const sumRecVal = document.getElementById('summary_records_val');
+        const btnSubmit = document.getElementById('btn-submit');
+        const inputType = document.getElementById('export_type');
+
+        if(type === 'excel') {
+            btnExcel.className = 'btn text-white fw-semibold px-4'; btnExcel.style.backgroundColor = '#68161D';
+            btnPdf.className = 'btn btn-outline-secondary bg-white fw-semibold px-4'; btnPdf.style.backgroundColor = '';
+            secExcel.classList.remove('d-none'); secPdf.classList.add('d-none');
+            sumFormat.innerText = 'Excel (.xlsx)';
+            sumRecVal.innerText = '{{ total_records }} NCRs';
+            btnSubmit.innerText = 'Export to Excel';
+            inputType.value = 'excel';
+        } else {
+            btnPdf.className = 'btn text-white fw-semibold px-4'; btnPdf.style.backgroundColor = '#68161D';
+            btnExcel.className = 'btn btn-outline-secondary bg-white fw-semibold px-4'; btnExcel.style.backgroundColor = '';
+            secPdf.classList.remove('d-none'); secExcel.classList.add('d-none');
+            sumFormat.innerText = 'PDF';
+            sumRecVal.innerText = 'NCR-2026-0042.pdf';
+            btnSubmit.innerText = 'Export to PDF';
+            inputType.value = 'pdf';
+        }
+    }
+    document.getElementById('exportForm').addEventListener('submit', function(e) {
+        var myModal = new bootstrap.Modal(document.getElementById('successModal'));
+        myModal.show();
+    });
+</script>
+{% endblock %}

@@ -33,18 +33,17 @@
         <i class="bi bi-person"></i> Alert Recipients
     </a>
     
-    <!-- Export -->
+        <!-- Export (UPDATED) -->
     <a href="{% url 'staff_export' %}" 
        class="nav-link {% if request.resolver_match.url_name == 'staff_export' %}active{% endif %}">
         <i class="bi bi-download"></i> Export
     </a>
     
-    <!-- Audit History -->
-    <a href="{% url 'staff_audit' %}" 
-       class="nav-link {% if request.resolver_match.url_name == 'staff_audit' %}active{% endif %}">
-        <i class="bi bi-clock"></i> Audit History
+    <!-- Audit History (UPDATED) -->
+    <a href="{% url 'staff_audit_history' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'staff_audit_history' %}active{% endif %}">
+        <i class="bi bi-clock-history"></i> Audit History
     </a>
-</div>
 
 <div class="sidebar-footer">
     <form method="post" action="{% url 'logout' %}">

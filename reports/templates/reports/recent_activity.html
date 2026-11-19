@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-1">Activity Log</h1>
+        <p class="text-muted mb-0">Admin activity log: user accounts, projects, departments, and alert recipients</p>
+    </div>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary bg-white shadow-sm"><i class="bi bi-chevron-left me-1"></i> Back to Dashboard</a>
+</div>
+
+<div class="card shadow-sm border-0 rounded-3 overflow-hidden mt-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="py-3 px-4 text-muted">Date & Time</th>
+                    <th class="py-3 text-muted">Action</th>
+                    <th class="py-3 text-muted">Entity</th>
+                    <th class="py-3 text-muted">Name</th>
+                    <th class="py-3 text-muted">Changes</th>
+                    <th class="py-3 text-muted">Performed by</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for act in page_obj %}
+                <tr>
+                    <td class="px-4 text-muted small">{{ act.created_at|date:"M d, g:i A" }}</td>
+                    <td>
+                        <span class="badge rounded-pill px-3 py-2 
+                            {% if act.action_type == 'created' %}bg-success bg-opacity-10 text-success
+                            {% elif act.action_type == 'updated' %}bg-primary bg-opacity-10 text-primary
+                            {% elif act.action_type == 'deleted' %}bg-danger bg-opacity-10 text-danger
+                            {% else %}bg-warning bg-opacity-10 text-warning{% endif %}">
+                            {{ act.action_type|title }}
+                        </span>
+                    </td>
+                    <td class="text-muted">{{ act.entity_type|title }}</td>
+                    <td class="fw-semibold">{{ act.entity_label }}</td>
+                    <td class="text-muted small">{% if act.old_value and act.new_value %}{{ act.old_value }} &rarr; {{ act.new_value }}{% else %}&mdash;{% endif %}</td>
+                    <td class="text-muted small">{{ act.user.full_name }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted">No activities found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="p-3 border-top d-flex justify-content-between align-items-center">
+        <small class="text-muted">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} activities</small>
+        <div class="d-flex gap-2">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Prev</a>
+            {% else %}<button class="btn btn-sm btn-outline-secondary" disabled>Prev</button>{% endif %}
+            
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm text-white" style="background-color: #68161D;">Next</a>
+            {% else %}<button class="btn btn-sm text-white" style="background-color: #68161D;" disabled>Next</button>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

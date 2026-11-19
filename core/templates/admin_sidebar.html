@@ -39,12 +39,17 @@
         <i class="bi bi-person-lines-fill"></i> Alert Recipients
     </a>
     
-    <!-- Audit History -->
-    <a href="{% url 'admin_audit' %}" 
-       class="nav-link {% if request.resolver_match.url_name == 'admin_audit' %}active{% endif %}">
+        <!-- Recent Activity (NEW) -->
+    <a href="{% url 'admin_recent_activity' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_recent_activity' %}active{% endif %}">
+        <i class="bi bi-activity"></i> Recent Activity
+    </a>
+
+    <!-- Audit History (UPDATED) -->
+    <a href="{% url 'admin_audit_history' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'admin_audit_history' %}active{% endif %}">
         <i class="bi bi-clock-history"></i> Audit History
     </a>
-</div>
 
 <div class="sidebar-footer">
     <form method="post" action="{% url 'logout' %}">
