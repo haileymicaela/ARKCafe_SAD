@@ -11,15 +11,130 @@
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
   
+  <!-- Loop through other fields -->
   {% for field in form %}
-    <div class="mb-3">
-      <label class="form-label fw-semibold">{{ field.label }}</label>
-      {{ field }}
-      {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-      {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-    </div>
+    {% if field.name != 'attachments' %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    {% endif %}
   {% endfor %}
+
+  <!-- Custom Attachments UI -->
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <label class="form-label fw-semibold mb-0">Attachments</label>
+      <span class="text-muted small">Optional</span>
+    </div>
+    
+    <!-- Drag & Drop Area (Mas maliit na padding) -->
+    <div id="drop-area" class="drop-zone text-center p-3 mb-3"> <!-- Binago ang p-4 to p-3 -->
+      <div class="mb-1"> <!-- Binago ang mb-2 to mb-1 -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-upload text-secondary" viewBox="0 0 16 16"> <!-- Binago ang size to 24x24 -->
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+          <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+        </svg>
+      </div>
+      <p class="mb-1 small fw-semibold">Drag & drop photos or documents, or <span class="text-crimson text-decoration-underline" style="cursor:pointer;" id="browse-btn">browse</span></p> <!-- Nilagyan ng small class -->
+      <p class="text-muted mb-0" style="font-size: 12px;">JPG, PNG or PDF · up to 5 MB each</p> <!-- Ginawang 12px ang font size -->
+      
+      <!-- Hidden default file input -->
+      <div class="d-none">
+        {{ form.attachments }}
+      </div>
+    </div>
+
+    <!-- File List -->
+    <div id="file-list" class="d-flex flex-column gap-2"></div>
+    
+    {% for error in form.attachments.errors %}<div class="text-danger small mt-2">{{ error }}</div>{% endfor %}
+  </div>
   
-  <button type="submit" class="btn btn-crimson">Save NCR</button>
+  <button type="submit" class="btn btn-crimson w-100">Save NCR</button>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.querySelector('input[type="file"][name="attachments"]');
+  const dropArea = document.getElementById('drop-area');
+  const browseBtn = document.getElementById('browse-btn');
+  const fileList = document.getElementById('file-list');
+
+  // Trigger file input when clicking browse
+  browseBtn.addEventListener('click', () => fileInput.click());
+
+  // Handle Drag & Drop
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+  });
+
+  dropArea.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files; // Assign files to the input
+    updateFileList();
+  });
+
+  // Handle file input change
+  fileInput.addEventListener('change', updateFileList);
+
+  // Render File List
+  function updateFileList() {
+    fileList.innerHTML = '';
+    const files = fileInput.files;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      
+      const item = document.createElement('div');
+      item.className = 'd-flex justify-content-between align-items-center p-2 border rounded bg-white';
+      item.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <div class="bg-light p-2 rounded"><i class="bi bi-file-earmark-image text-secondary"></i></div>
+          <div>
+            <div class="fw-semibold small">${file.name}</div>
+            <div class="text-muted small">${sizeMB} MB</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="removeFile(${i})">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      `;
+      fileList.appendChild(item);
+    }
+  }
+
+  // Remove file logic
+  window.removeFile = function(index) {
+    const dt = new DataTransfer();
+    const files = fileInput.files;
+    for (let i = 0; i < files.length; i++) {
+      if (i !== index) {
+        dt.items.add(files[i]);
+      }
+    }
+    fileInput.files = dt.files;
+    updateFileList();
+  };
+});
+</script>
 {% endblock %}
