@@ -51,7 +51,7 @@
                     <!-- This changes the page name -->
                     <li class="breadcrumb-item active" aria-current="page">
                         {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}Dashboard
-                        {% elif request.resolver_match.url_name == 'admin_projects' %}Projects
+                        {% elif request.resolver_match.url_name == 'project_list' or request.resolver_match.url_name == 'project_add' or request.resolver_match.url_name == 'project_edit' %}Projects
                         {% elif request.resolver_match.url_name == 'admin_departments' %}Departments
                         {% elif request.resolver_match.url_name == 'admin_users' %}User Accounts
                         {% elif request.resolver_match.url_name == 'admin_recipients' or request.resolver_match.url_name == 'staff_recipients' %}Alert Recipients
@@ -83,7 +83,7 @@
                     <!-- Dynamic H1 Title -->
                     <h1>
                         {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}Dashboard
-                        {% elif request.resolver_match.url_name == 'admin_projects' %}Projects
+                        {% elif request.resolver_match.url_name == 'project_list' or m == 'project_add' or n == 'project_edit' %}Projects
                         {% elif request.resolver_match.url_name == 'admin_departments' %}Departments
                         {% elif request.resolver_match.url_name == 'admin_users' %}User Accounts
                         {% elif request.resolver_match.url_name == 'admin_recipients' or request.resolver_match.url_name == 'staff_recipients' %}Alert Recipients
