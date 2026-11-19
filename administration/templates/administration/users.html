@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<style>
+  .btn-crimson { background: var(--crimson-dark); border-color: var(--crimson-dark); color: #fff; }
+  .btn-crimson:hover { background: var(--crimson-light); border-color: var(--crimson-light); color: #fff; }
+  .btn-soft { background: #F0F0F0; border: 0; font-size: 12px; padding: 4px 10px; color: var(--text-dark); }
+  .btn-soft:hover { background: #E5E7EB; }
+  .user-table th { font-size: 12px; font-weight: 500; color: var(--text-muted); white-space: nowrap; }
+  .user-name { color: var(--crimson-dark); font-weight: 600; }
+  .st-active { color: #0A7A43; font-weight: 600; }
+  .btn-status { background: #F0F0F0; border: 0; color: var(--text-dark); font-weight: 500; }
+  .btn-check:checked + .btn-status { background: var(--crimson-dark); color: #fff; }
+  .warn-icon { width: 48px; height: 48px; border-radius: 50%; background: #F3C9CC; color: var(--crimson-dark); font-size: 22px; font-weight: 700; }
+  .info-box { background: #F5F4F4; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text-muted); text-align: left; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="page-state" hidden
+     data-open-modal="{{ open_modal }}"
+     data-edit-was-active="{{ edit_was_active }}"
+     data-reset-id="{{ reset_target.user_id|default:'' }}"
+     data-reset-name="{{ reset_target.full_name|default:'' }}"></div>
+
+<!-- Add user -->
+<div class="d-flex justify-content-end mb-3">
+  <button type="button" class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#addModal">
+    <i class="bi bi-plus-lg me-1"></i> Add User
+  </button>
+</div>
+
+<!-- Search + filters -->
+<form method="get" class="d-flex flex-wrap gap-2 mb-3">
+  <div class="input-group flex-grow-1" style="min-width: 220px;">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="search" name="q" value="{{ q }}" class="form-control border-start-0"
+           placeholder="Search by Name or email...">
+  </div>
+  <select name="role" class="form-select w-auto" data-autosubmit>
+    <option value="">All roles</option>
+    {% for value, label in roles %}<option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <select name="status" class="form-select w-auto" data-autosubmit>
+    <option value="">All statuses</option>
+    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+  </select>
+  <select name="sort" class="form-select w-auto" data-autosubmit>
+    <option value="name_asc" {% if sort != 'name_desc' %}selected{% endif %}>Name A-Z</option>
+    <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
+  </select>
+</form>
+
+<!-- Table -->
+<div class="card border shadow-sm rounded-3 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table user-table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Full Name</th><th>Email</th><th>Department</th>
+          <th>Role</th><th>Status</th><th class="text-end pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in page_obj %}
+        <tr class="{% if not u.is_active %}text-muted{% endif %}">
+          <td class="ps-4 {% if u.is_active %}user-name{% endif %}">{{ u.full_name }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.department.department_name|default:"—" }}</td>
+          <td>{{ u.get_role_display }}</td>
+          <td>{% if u.is_active %}<span class="st-active">Active</span>{% else %}Inactive{% endif %}</td>
+          <td class="text-end pe-4 text-nowrap">
+            <button type="button" class="btn btn-soft" data-bs-toggle="modal" data-bs-target="#editModal"
+                    data-id="{{ u.user_id }}" data-name="{{ u.full_name }}" data-email="{{ u.email }}"
+                    data-dept="{{ u.department_id|default:'' }}" data-role="{{ u.role }}"
+                    data-active="{% if u.is_active %}1{% else %}0{% endif %}">Edit</button>
+            <button type="button" class="btn btn-soft js-reset"
+                    data-id="{{ u.user_id }}" data-name="{{ u.full_name }}">Reset Password</button>
+            <button type="button" class="btn btn-soft js-delete"
+                    data-id="{{ u.user_id }}" data-name="{{ u.full_name }}"
+                    data-active="{% if u.is_active %}1{% else %}0{% endif %}"
+                    data-ncrs="{{ u.ncr_count }}" data-audits="{{ u.audit_count }}"
+                    data-activities="{{ u.activity_count }}">Delete</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No accounts found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+    <span class="small text-muted">
+      {% if page_obj.paginator.count %}Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} accounts{% else %}No accounts{% endif %}
+    </span>
+    <div class="d-flex gap-2">
+      {% if page_obj.has_previous %}
+      <a class="btn btn-outline-secondary btn-sm" href="?{% if qs %}{{ qs }}&{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+      {% else %}<span class="btn btn-outline-secondary btn-sm disabled">Prev</span>{% endif %}
+      {% if page_obj.has_next %}
+      <a class="btn btn-crimson btn-sm" href="?{% if qs %}{{ qs }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% else %}<span class="btn btn-crimson btn-sm disabled">Next</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Add modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <form method="post" class="modal-content" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">Add User</h5>
+          <div class="text-muted small">Create an account for a QA/QC staff member.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% include 'administration/_field.html' with field=add_form.full_name %}
+        {% include 'administration/_field.html' with field=add_form.email %}
+        <div class="row">
+          <div class="col-6">{% include 'administration/_field.html' with field=add_form.department %}</div>
+          <div class="col-6">{% include 'administration/_field.html' with field=add_form.role %}</div>
+        </div>
+        {% include 'administration/_field.html' with field=add_form.password1 %}
+        {% include 'administration/_field.html' with field=add_form.password2 %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Create Account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <form method="post" class="modal-content" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="edit">
+      <input type="hidden" name="user_id" value="{{ edit_id }}">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">Edit User</h5>
+          <div class="text-muted small">Update this user's details</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% include 'administration/_field.html' with field=edit_form.full_name %}
+        {% include 'administration/_field.html' with field=edit_form.email %}
+        <div class="row">
+          <div class="col-6">{% include 'administration/_field.html' with field=edit_form.department %}</div>
+          <div class="col-6">{% include 'administration/_field.html' with field=edit_form.role %}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <input type="radio" class="btn-check" name="edit-is_active" id="edit-active" value="1"
+                 {% if edit_form.is_active.value|stringformat:"s" == "1" %}checked{% endif %}>
+          <label class="btn btn-status" for="edit-active">Active</label>
+          <input type="radio" class="btn-check" name="edit-is_active" id="edit-inactive" value="0"
+                 {% if edit_form.is_active.value|stringformat:"s" == "0" %}checked{% endif %}>
+          <label class="btn btn-status" for="edit-inactive">Inactive</label>
+        </div>
+        {% for e in edit_form.is_active.errors %}<div class="text-danger small mt-1 field-error">{{ e }}</div>{% endfor %}
+        <hr>
+        <div class="d-flex justify-content-between align-items-center gap-3">
+          <div>
+            <div class="fw-bold">Password</div>
+            <div class="text-muted small">Passwords can only be reset, not viewed.</div>
+          </div>
+          <button type="button" class="btn btn-light" id="editResetBtn">Reset Password</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reset password modal -->
+<div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="post" class="modal-content" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reset">
+      <input type="hidden" name="user_id" value="{{ reset_target.user_id|default:'' }}">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">Reset Password</h5>
+          <div class="text-muted small">Set a new temporary password for <span id="resetName">{{ reset_target.full_name }}</span></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% include 'administration/_field.html' with field=reset_form.new_password1 %}
+        {% include 'administration/_field.html' with field=reset_form.new_password2 %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Reset Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Deactivate confirm -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="post" class="modal-content text-center p-3" id="deactivateForm">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="deactivate">
+      <input type="hidden" name="user_id" value="">
+      <div class="warn-icon d-flex align-items-center justify-content-center mx-auto mb-3">!</div>
+      <h5 class="fw-bold mb-3">Deactivate this account?</h5>
+      <div class="info-box mb-3">
+        <span id="deactName"></span> will no longer be able to sign in. Their NCRs and audit history are kept.
+        You can activate the account again at any time.
+      </div>
+      <div class="d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Deactivate</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete confirm (no records) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="post" class="modal-content text-center p-3" id="deleteForm">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="delete">
+      <input type="hidden" name="user_id" value="">
+      <div class="warn-icon d-flex align-items-center justify-content-center mx-auto mb-3">!</div>
+      <h5 class="fw-bold mb-3">Delete this account?</h5>
+      <div class="info-box mb-3">
+        <div class="mb-2"><span id="deleteName"></span> will no longer be able to sign in. This cannot be undone.</div>
+        <a href="#" class="text-decoration-none fw-medium" id="deleteInstead" style="color: var(--crimson-dark);">Not sure? Deactivate instead</a>
+      </div>
+      <div class="d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Delete account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cannot delete (has records) -->
+<div class="modal fade" id="blockedModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-3">
+      <div class="warn-icon d-flex align-items-center justify-content-center mx-auto mb-3">!</div>
+      <h5 class="fw-bold mb-3">This account cannot be deleted</h5>
+      <div class="info-box mb-3">
+        <div class="mb-2"><span id="blockedName"></span> has records in the system that must be kept for the audit trail.</div>
+        <div class="d-flex justify-content-between fw-semibold" id="rowNcrs" style="color: var(--crimson-dark);"><span>NCRs created</span><span id="bNcrs"></span></div>
+        <div class="d-flex justify-content-between fw-semibold" id="rowAudits" style="color: var(--crimson-dark);"><span>Audit log entries</span><span id="bAudits"></span></div>
+        <div class="d-flex justify-content-between fw-semibold" id="rowActs" style="color: var(--crimson-dark);"><span>Activity log entries</span><span id="bActs"></span></div>
+        <div class="mt-2" id="blockedHint">Deactivate the account instead to stop them signing in. Their records stay.</div>
+      </div>
+      <div class="d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-crimson" id="blockedDeactivate">Deactivate instead</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast messages -->
+{% if messages %}
+<div class="toast-container position-fixed end-0 p-3" style="top: 56px; z-index: 1100;">
+  {% for m in messages %}
+  <div class="toast text-bg-dark border-0 user-toast" role="alert" data-bs-delay="4500">
+    <div class="d-flex align-items-center">
+      <div class="toast-body d-flex align-items-center gap-2">
+        <i class="bi {% if m.level_tag == 'error' %}bi-x-circle-fill text-danger{% else %}bi-check-circle-fill text-success{% endif %} fs-5"></i>
+        <span>{{ m }}</span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var modal = function (id) { return bootstrap.Modal.getOrCreateInstance($(id)); };
+  var state = $('page-state').dataset;
+  var editModal = $('editModal');
+  var editForm = editModal.querySelector('form');
+  var deactMode = 'direct';
+
+  // Close one modal, then open another
+  function swap(fromId, toId) {
+    $(fromId).addEventListener('hidden.bs.modal', function () { modal(toId).show(); }, { once: true });
+    modal(fromId).hide();
+  }
+
+  function askDeactivate(id, name, fromId) {
+    deactMode = 'direct';
+    $('deactivateForm').querySelector('[name="user_id"]').value = id;
+    $('deactName').textContent = name;
+    if (fromId) { swap(fromId, 'deactivateModal'); } else { modal('deactivateModal').show(); }
+  }
+
+  function openReset(id, name, fromId) {
+    $('resetModal').querySelector('[name="user_id"]').value = id;
+    $('resetName').textContent = name;
+    $('resetModal').querySelectorAll('input[type="password"]').forEach(function (i) { i.value = ''; });
+    $('resetModal').querySelectorAll('.field-error').forEach(function (n) { n.remove(); });
+    if (fromId) { swap(fromId, 'resetModal'); } else { modal('resetModal').show(); }
+  }
+
+  // Filters submit on change
+  document.querySelectorAll('[data-autosubmit]').forEach(function (el) {
+    el.addEventListener('change', function () { el.form.submit(); });
+  });
+
+  // Add modal: start clean when opened by the button
+  $('addModal').addEventListener('show.bs.modal', function (e) {
+    if (!e.relatedTarget) return;
+    $('addModal').querySelectorAll('.field-error').forEach(function (n) { n.remove(); });
+    $('addModal').querySelectorAll('input:not([type="hidden"])').forEach(function (i) { i.value = ''; });
+    $('addModal').querySelectorAll('select').forEach(function (s) { s.selectedIndex = 0; });
+  });
+
+  // Edit modal: prefill from the clicked row
+  editModal.addEventListener('show.bs.modal', function (e) {
+    var b = e.relatedTarget;
+    if (!b) { editModal.dataset.wasActive = state.editWasActive; return; }
+    editModal.querySelectorAll('.field-error').forEach(function (n) { n.remove(); });
+    editModal.querySelector('[name="user_id"]').value = b.dataset.id;
+    editModal.querySelector('[name="edit-full_name"]').value = b.dataset.name;
+    editModal.querySelector('[name="edit-email"]').value = b.dataset.email;
+    editModal.querySelector('[name="edit-department"]').value = b.dataset.dept;
+    editModal.querySelector('[name="edit-role"]').value = b.dataset.role;
+    editModal.querySelector('[name="edit-is_active"][value="' + b.dataset.active + '"]').checked = true;
+    editModal.dataset.wasActive = b.dataset.active;
+    delete editForm.dataset.confirmed;
+  });
+
+  // Reset password from the Edit modal
+  $('editResetBtn').addEventListener('click', function () {
+    openReset(editModal.querySelector('[name="user_id"]').value,
+              editModal.querySelector('[name="edit-full_name"]').value, 'editModal');
+  });
+
+  // Active -> Inactive in Edit asks for confirmation first
+  editForm.addEventListener('submit', function (e) {
+    var now = editForm.querySelector('[name="edit-is_active"]:checked');
+    if (editModal.dataset.wasActive === '1' && now && now.value === '0' && !editForm.dataset.confirmed) {
+      e.preventDefault();
+      deactMode = 'edit';
+      $('deactName').textContent = editForm.querySelector('[name="edit-full_name"]').value;
+      swap('editModal', 'deactivateModal');
+    }
+  });
+  $('deactivateForm').addEventListener('submit', function (e) {
+    if (deactMode === 'edit') {
+      e.preventDefault();
+      editForm.dataset.confirmed = '1';
+      editForm.requestSubmit();
+    }
+  });
+
+  // Row buttons
+  document.querySelectorAll('.js-reset').forEach(function (b) {
+    b.addEventListener('click', function () { openReset(b.dataset.id, b.dataset.name, null); });
+  });
+  document.querySelectorAll('.js-delete').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = b.dataset, ncrs = +d.ncrs, audits = +d.audits, acts = +d.activities;
+      if (ncrs + audits + acts > 0) {
+        $('blockedName').textContent = d.name;
+        $('bNcrs').textContent = ncrs;
+        $('bAudits').textContent = audits;
+        $('bActs').textContent = acts;
+        $('rowNcrs').classList.toggle('d-none', ncrs === 0);
+        $('rowAudits').classList.toggle('d-none', audits === 0);
+        $('rowActs').classList.toggle('d-none', acts === 0);
+        var canDeact = d.active === '1';
+        $('blockedDeactivate').classList.toggle('d-none', !canDeact);
+        $('blockedHint').classList.toggle('d-none', !canDeact);
+        $('blockedDeactivate').dataset.id = d.id;
+        $('blockedDeactivate').dataset.name = d.name;
+        modal('blockedModal').show();
+      } else {
+        $('deleteName').textContent = d.name;
+        $('deleteForm').querySelector('[name="user_id"]').value = d.id;
+        $('deleteInstead').dataset.id = d.id;
+        $('deleteInstead').dataset.name = d.name;
+        $('deleteInstead').classList.toggle('d-none', d.active !== '1');
+        modal('deleteModal').show();
+      }
+    });
+  });
+  $('blockedDeactivate').addEventListener('click', function () {
+    askDeactivate(this.dataset.id, this.dataset.name, 'blockedModal');
+  });
+  $('deleteInstead').addEventListener('click', function (e) {
+    e.preventDefault();
+    askDeactivate(this.dataset.id, this.dataset.name, 'deleteModal');
+  });
+
+  // Reopen after validation errors
+  if (state.openModal === 'reset') {
+    $('resetModal').querySelector('[name="user_id"]').value = state.resetId;
+    $('resetName').textContent = state.resetName;
+  }
+  if (state.openModal) { modal(state.openModal + 'Modal').show(); }
+
+  // Toasts
+  document.querySelectorAll('.user-toast').forEach(function (t) {
+    bootstrap.Toast.getOrCreateInstance(t).show();
+  });
+});
+</script>
+{% endblock %}

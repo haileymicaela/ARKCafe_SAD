@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block extra_head %}{% include "ncr/_head.html" %}{% endblock %}
+
+{% block content %}
+{% include "ncr/_messages.html" %}
+
+<form method="get" class="ncr-card p-3 mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-4">
+      <label class="form-label small text-muted mb-1">Search</label>
+      <input type="text" name="q" value="{{ filters.q }}" class="form-control" placeholder="Reference no., subject, package, project">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small text-muted mb-1">Status</label>
+      <select name="status" class="form-select">
+        <option value="">All</option>
+        {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small text-muted mb-1">Cause</label>
+      <select name="cause" class="form-select">
+        <option value="">All</option>
+        {% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small text-muted mb-1">Project</label>
+      <select name="project" class="form-select">
+        <option value="">All</option>
+        {% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.project_code }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small text-muted mb-1">Department</label>
+      <select name="department" class="form-select">
+        <option value="">All</option>
+        {% for d in departments %}<option value="{{ d.pk }}" {% if filters.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.department_name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label small text-muted mb-1">Issued from</label>
+      <input type="date" name="date_from" value="{{ filters.date_from }}" class="form-control">
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label small text-muted mb-1">Issued to</label>
+      <input type="date" name="date_to" value="{{ filters.date_to }}" class="form-control">
+    </div>
+    <div class="col-12 col-md-3 d-flex gap-2">
+      <button class="btn btn-crimson flex-fill" type="submit">Filter</button>
+      <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </div>
+</form>
+
+<div class="ncr-card">
+  <div class="card-title-bar d-flex justify-content-between align-items-center">
+    <span>NCR Records <span class="text-muted fw-normal">({{ page_obj.paginator.count }})</span></span>
+    <a href="{% url 'staff_create_ncr' %}" class="btn btn-sm btn-crimson"><i class="bi bi-plus-lg me-1"></i>Create NCR</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover ncr-table">
+      <thead>
+        <tr><th>Reference No.</th><th>Subject</th><th>Project</th><th>Department</th><th>Cause</th><th>Issued</th><th>Required</th><th>Status</th><th class="text-end">Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for n in page_obj %}
+        <tr>
+          <td class="fw-semibold text-nowrap"><a href="{% url 'ncr_detail' n.pk %}" class="text-decoration-none" style="color: var(--crimson-dark)">{{ n.reference_no }}</a></td>
+          <td>{{ n.subject|truncatechars:40 }}</td>
+          <td class="text-nowrap">{{ n.project.project_code }}</td>
+          <td>{{ n.department.department_name }}</td>
+          <td><span class="badge badge-cause">{{ n.get_cause_display }}</span></td>
+          <td class="text-nowrap">{{ n.issued_date|date:"M d, Y"|default:"—" }}</td>
+          <td class="text-nowrap">
+            {% if n.required_date %}
+              {% if n.required_date < today and n.status in open_statuses %}
+                <span class="text-danger fw-semibold" title="Overdue">{{ n.required_date|date:"M d, Y" }} <i class="bi bi-exclamation-circle"></i></span>
+              {% else %}{{ n.required_date|date:"M d, Y" }}{% endif %}
+            {% else %}—{% endif %}
+          </td>
+          <td><span class="badge badge-{{ n.status }}">{{ n.get_status_display }}</span></td>
+          <td class="text-end text-nowrap">
+            <a href="{% url 'ncr_detail' n.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+            <a href="{% url 'ncr_edit' n.pk %}" class="btn btn-sm btn-outline-crimson">Edit</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-5">No NCR records found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "ncr/_pagination.html" %}
+</div>
+{% endblock %}
