@@ -138,3 +138,6 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Custom setting for file uploads
+DATA_UPLOAD_MAX_NUMBER_FILES = 20
