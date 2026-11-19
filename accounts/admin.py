@@ -8,7 +8,7 @@ from .models import User
 class UserCreationForm(BaseUserCreationForm):
     class Meta:
         model = User
-        fields = ("email", "full_name", "role")
+        fields = ("email", "full_name", "role", "department")
 
 
 class UserEditForm(UserChangeForm):
@@ -30,11 +30,11 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Profile", {"fields": ("full_name", "role", "is_active")}),
+        ("Profile", {"fields": ("full_name", "role", "department", "is_active")}),
     )
     add_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("email", "full_name", "role", "password1", "password2"),
+            "fields": ("email", "full_name", "role", "department", "password1", "password2"),
         }),
     )
