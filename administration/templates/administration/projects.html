@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  .btn-crimson { background:#6b0f12; color:#fff; border:0; font-weight:600; }
+  .btn-crimson:hover { background:#550c0f; color:#fff; }
+  .btn-danger-solid { background:#dc2626; color:#fff; border:0; font-weight:600; }
+  .btn-danger-solid:hover { background:#b91c1c; color:#fff; }
+  .btn-outline-soft { background:#fff; color:#111827; border:1px solid #d1d5db; font-weight:600; }
+  .btn-outline-soft:hover { background:#f3f4f6; }
+
+  .proj-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+  .proj-table { margin:0; }
+  .proj-table th { font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+                   color:#6b7280; font-weight:600; padding:12px 16px; background:#fff;
+                   border-bottom:1px solid #e5e7eb; }
+  .proj-table td { padding:14px 16px; font-size:13px; vertical-align:middle;
+                   border-bottom:1px solid #f1f1f1; }
+  .proj-table tr:last-child td { border-bottom:0; }
+  .code-badge { display:inline-block; background:#f9e3e4; color:#6b0f12; font-size:11px;
+                font-weight:600; padding:3px 8px; border-radius:6px; }
+  .proj-name { font-weight:700; color:#111827; }
+  .proj-muted { color:#6b7280; }
+  .btn-act { background:#eceef1; color:#111827; border:0; font-size:12px; font-weight:600;
+             padding:5px 10px; border-radius:6px; }
+  .btn-act:hover { background:#dfe2e6; }
+
+  .proj-footer { display:flex; justify-content:space-between; align-items:center;
+                 padding:12px 16px; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280; }
+  .pg-btn { display:inline-block; min-width:26px; text-align:center; padding:3px 8px;
+            border-radius:6px; font-size:12px; font-weight:600; text-decoration:none;
+            background:#f3f4f6; color:#111827; margin-left:4px; }
+  .pg-btn.active { background:#6b0f12; color:#fff; }
+
+  .pm-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+                 z-index:2000; align-items:center; justify-content:center; padding:16px; }
+  .pm-backdrop.open { display:flex; }
+  .pm-box { background:#fff; border-radius:14px; width:100%; max-width:460px;
+            max-height:90vh; overflow:auto; padding:22px; position:relative;
+            box-shadow:0 20px 50px rgba(0,0,0,.25); }
+  .pm-box.sm { max-width:400px; }
+  .pm-title { font-size:16px; font-weight:700; margin:0; }
+  .pm-sub { font-size:12px; color:#6b7280; margin:2px 0 14px; }
+  .pm-close { position:absolute; top:16px; right:16px; width:26px; height:26px;
+              border:1px solid #e5e7eb; background:#fff; border-radius:6px; line-height:1;
+              color:#6b7280; cursor:pointer; }
+  .pm-field { margin-bottom:12px; }
+  .pm-field label { font-size:12px; font-weight:700; display:block; margin-bottom:4px; }
+  .pm-field .req { color:#dc2626; }
+  .pm-field input, .pm-field textarea { width:100%; padding:8px 10px; font-size:13px;
+            border:1px solid #d1d5db; border-radius:8px; outline:none; }
+  .pm-field input:focus, .pm-field textarea:focus { border-color:#6b0f12; }
+  .pm-field textarea { min-height:80px; resize:vertical; }
+  .pm-field.has-error input { border-color:#dc2626; }
+  .pm-err { color:#dc2626; font-size:11px; margin-top:4px; }
+  .pm-hint { color:#6b7280; font-size:11px; margin-top:4px; }
+
+  .pm-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center;
+             justify-content:center; font-size:18px; margin-bottom:12px; }
+  .pm-icon.warn { background:#fdf0c4; color:#b45309; }
+  .pm-icon.danger { background:#fde2e2; color:#dc2626; }
+  .pm-text { font-size:12px; color:#6b7280; line-height:1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <button type="button" class="btn btn-crimson" id="btnAdd">+ Add Project</button>
+</div>
+
+{% for m in messages %}
+  <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags|default:'info' }}{% endif %} py-2">{{ m }}</div>
+{% endfor %}
+
+<form method="get" class="d-flex justify-content-between align-items-center mb-3">
+  <input name="q" value="{{ q }}" class="form-control" style="max-width:360px"
+         placeholder="Search by name, code or client">
+  <small class="text-muted">{{ total }} project{{ total|pluralize }}</small>
+</form>
+
+<div class="proj-card">
+  <div class="table-responsive">
+    <table class="table proj-table">
+      <thead>
+        <tr>
+          <th>Project Code</th><th>Project Name</th><th>Client Name</th>
+          <th>Description</th><th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in page %}
+        <tr>
+          <td><span class="code-badge">{{ p.project_code }}</span></td>
+          <td class="proj-name">{{ p.project_name }}</td>
+          <td>{{ p.client_name }}</td>
+          <td class="proj-muted">{{ p.description|default:"—"|truncatechars:60 }}</td>
+          <td class="text-end text-nowrap">
+            <button type="button" class="btn-act btn-edit"
+                    data-action="{% url 'project_edit' p.pk %}"
+                    data-project_code="{{ p.project_code }}"
+                    data-project_name="{{ p.project_name }}"
+                    data-client_name="{{ p.client_name }}"
+                    data-description="{{ p.description }}">Edit</button>
+            <button type="button" class="btn-act btn-del"
+                    data-action="{% url 'project_delete' p.pk %}"
+                    data-code="{{ p.project_code }}"
+                    data-name="{{ p.project_name }}"
+                    data-ncrs="{{ p.ncr_count }}">Delete</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No projects found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="proj-footer">
+    <span>Showing {{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} projects</span>
+    <div>
+      {% if page.has_previous %}
+        <a class="pg-btn" href="?q={{ q }}&page={{ page.previous_page_number }}">&lsaquo;</a>
+      {% endif %}
+      {% for n in page.paginator.page_range %}
+        <a class="pg-btn {% if n == page.number %}active{% endif %}" href="?q={{ q }}&page={{ n }}">{{ n }}</a>
+      {% endfor %}
+      {% if page.has_next %}
+        <a class="pg-btn" href="?q={{ q }}&page={{ page.next_page_number }}">&rsaquo;</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit modal -->
+<div class="pm-backdrop {% if modal_title %}open{% endif %}" id="projectModal">
+  <div class="pm-box">
+    <button type="button" class="pm-close" data-close="projectModal" aria-label="Close">&times;</button>
+    <h5 class="pm-title" id="pmTitle">{{ modal_title|default:"Add Project" }}</h5>
+    <p class="pm-sub" id="pmSub">
+      {% if modal_title == "Edit Project" %}Update the project details, then save your changes.{% else %}Fill in the project details. Fields marked * are required.{% endif %}
+    </p>
+    <form method="post" id="pmForm" action="{{ modal_action|default:'' }}">
+      {% csrf_token %}
+
+      <div class="pm-field {% if form.project_name.errors %}has-error{% endif %}">
+        <label>Project name <span class="req">*</span></label>
+        {{ form.project_name }}
+        {% for e in form.project_name.errors %}<div class="pm-err">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="pm-field {% if form.client_name.errors %}has-error{% endif %}">
+        <label>Client name <span class="req">*</span></label>
+        {{ form.client_name }}
+        {% for e in form.client_name.errors %}<div class="pm-err">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="pm-field {% if form.project_code.errors %}has-error{% endif %}">
+        <label>Project code <span class="req">*</span></label>
+        {{ form.project_code }}
+        {% for e in form.project_code.errors %}<div class="pm-err">{{ e }}</div>
+        {% empty %}<div class="pm-hint">Must be unique. Shown as the project reference on NCR records.</div>{% endfor %}
+      </div>
+
+      <div class="pm-field {% if form.description.errors %}has-error{% endif %}">
+        <label>Description (optional)</label>
+        {{ form.description }}
+        {% for e in form.description.errors %}<div class="pm-err">{{ e }}</div>{% endfor %}
+      </div>
+
+      {% for e in form.non_field_errors %}<div class="pm-err">{{ e }}</div>{% endfor %}
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button type="button" class="btn btn-sm btn-outline-soft px-3" data-close="projectModal">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-crimson px-3" id="pmSubmit">
+          {% if modal_title == "Edit Project" %}Save Changes{% else %}Save Project{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Can't delete (has NCRs) -->
+<div class="pm-backdrop" id="blockedModal">
+  <div class="pm-box sm">
+    <div class="pm-icon warn">&#9888;</div>
+    <h5 class="pm-title mb-2">Can't delete this project</h5>
+    <p class="pm-text" id="blockedText"></p>
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-sm btn-crimson px-3" data-close="blockedModal">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete (no NCRs) -->
+<div class="pm-backdrop" id="confirmModal">
+  <div class="pm-box sm">
+    <div class="pm-icon danger">&#9888;</div>
+    <h5 class="pm-title mb-2">Delete this project?</h5>
+    <p class="pm-text" id="confirmText"></p>
+    <form method="post" id="deleteForm" action="">
+      {% csrf_token %}
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button type="button" class="btn btn-sm btn-outline-soft px-3" data-close="confirmModal">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-danger-solid px-3">Delete Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const projectModal = $("projectModal");
+  const form = $("pmForm");
+  const addUrl = "{% url 'project_add' %}";
+
+  const placeholders = {
+    project_name: "e.g. Skyline Tower Phase 2",
+    client_name: "e.g. Megaworld Corp.",
+    project_code: "e.g. PRJ-007",
+    description: "Short description of the project scope"
+  };
+
+  const openM = (el) => el.classList.add("open");
+  const closeM = (el) => el.classList.remove("open");
+  const field = (name) => form.querySelector('[name="' + name + '"]');
+
+  function clearErrors() {
+    form.querySelectorAll(".pm-err").forEach(e => e.remove());
+    form.querySelectorAll(".has-error").forEach(e => e.classList.remove("has-error"));
+  }
+
+  function setMode(isEdit) {
+    $("pmTitle").textContent = isEdit ? "Edit Project" : "Add Project";
+    $("pmSub").textContent = isEdit
+      ? "Update the project details, then save your changes."
+      : "Fill in the project details. Fields marked * are required.";
+    $("pmSubmit").textContent = isEdit ? "Save Changes" : "Save Project";
+  }
+
+  // Add
+  $("btnAdd").addEventListener("click", () => {
+    clearErrors();
+    setMode(false);
+    form.action = addUrl;
+    Object.keys(placeholders).forEach(n => {
+      const el = field(n);
+      if (el) { el.value = ""; el.placeholder = placeholders[n]; }
+    });
+    openM(projectModal);
+  });
+
+  // Edit
+  document.querySelectorAll(".btn-edit").forEach(btn => {
+    btn.addEventListener("click", () => {
+      clearErrors();
+      setMode(true);
+      form.action = btn.dataset.action;
+      Object.keys(placeholders).forEach(n => {
+        const el = field(n);
+        if (el) el.value = btn.dataset[n] || "";
+      });
+      openM(projectModal);
+    });
+  });
+
+  // Delete
+  document.querySelectorAll(".btn-del").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const n = parseInt(btn.dataset.ncrs, 10) || 0;
+      const label = btn.dataset.name + " (" + btn.dataset.code + ")";
+      if (n > 0) {
+        $("blockedText").textContent = label + " is linked to " + n +
+          " NCR record" + (n === 1 ? "" : "s") +
+          ". Reassign or remove those NCRs before deleting the project.";
+        openM($("blockedModal"));
+      } else {
+        $("confirmText").textContent = label +
+          " will be permanently removed. It has no NCR records linked to it. This action cannot be undone.";
+        $("deleteForm").action = btn.dataset.action;
+        openM($("confirmModal"));
+      }
+    });
+  });
+
+  // Close buttons, backdrop click, Esc
+  document.querySelectorAll("[data-close]").forEach(b =>
+    b.addEventListener("click", () => closeM($(b.dataset.close))));
+  document.querySelectorAll(".pm-backdrop").forEach(bd =>
+    bd.addEventListener("mousedown", (e) => { if (e.target === bd) closeM(bd); }));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") document.querySelectorAll(".pm-backdrop.open").forEach(closeM);
+  });
+
+  // Placeholders on server-rendered (error) state
+  Object.keys(placeholders).forEach(n => {
+    const el = field(n);
+    if (el && !el.placeholder) el.placeholder = placeholders[n];
+  });
+})();
+</script>
+{% endblock %}
