@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<style>
+  .btn-crimson { background: var(--crimson-dark); border-color: var(--crimson-dark); color: #fff; }
+  .btn-crimson:hover { background: var(--crimson-light); border-color: var(--crimson-light); color: #fff; }
+  .btn-soft { background: #F0F0F0; border: 0; font-size: 12px; padding: 4px 10px; color: var(--text-dark); }
+  .btn-soft:hover { background: #E5E7EB; }
+  .dept-table th { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+  .success-icon { width: 52px; height: 52px; border-radius: 50%; background: #E8F8EF; color: #0A8F4E; font-size: 28px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page state for the script (kept out of the <script> block) -->
+<div id="page-state" hidden
+     data-open-modal="{{ open_modal|default:'' }}"
+     data-has-message="{% if messages %}1{% endif %}"></div>
+
+<!-- Search + Add -->
+<div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+  <form method="get" class="flex-grow-1">
+    <div class="input-group">
+      <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+      <input type="search" name="q" value="{{ q }}" class="form-control border-start-0"
+             placeholder="Search by department name">
+    </div>
+  </form>
+  <button type="button" class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#addModal">
+    <i class="bi bi-plus-lg me-1"></i> Add Department
+  </button>
+</div>
+
+<!-- Table -->
+<div class="card border shadow-sm rounded-3 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table dept-table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Department</th>
+          <th>Recipients</th>
+          <th class="text-end pe-4">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in departments %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ d.department_name }}</td>
+          <td>{{ d.recipient_count }}</td>
+          <td class="text-end pe-4">
+            <button type="button" class="btn btn-soft" data-bs-toggle="modal" data-bs-target="#renameModal"
+                    data-id="{{ d.department_id }}" data-name="{{ d.department_name }}">Rename</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-center text-muted py-4">No departments found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="post" class="modal-content" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">Add Department</h5>
+          <div class="text-muted small">Add a new department</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="{{ add_form.department_name.id_for_label }}" class="form-label small fw-medium">
+          Department Name <span class="text-danger">*</span>
+        </label>
+        {{ add_form.department_name }}
+        {% for e in add_form.department_name.errors %}<div class="text-danger small mt-1 field-error">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Add Department</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Rename modal -->
+<div class="modal fade" id="renameModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="post" class="modal-content" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="rename">
+      <input type="hidden" name="department_id" value="{{ rename_id|default:'' }}">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">Rename Department</h5>
+          <div class="text-muted small">Rename an existing department</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="{{ rename_form.department_name.id_for_label }}" class="form-label small fw-medium">
+          Department Name <span class="text-danger">*</span>
+        </label>
+        {{ rename_form.department_name }}
+        {% for e in rename_form.department_name.errors %}<div class="text-danger small mt-1 field-error">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-crimson">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Success modal -->
+{% if messages %}
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content text-center p-3">
+      {% for m in messages %}{% if forloop.first %}
+      <div class="success-icon d-flex align-items-center justify-content-center mx-auto mb-3">
+        <i class="bi bi-check-lg"></i>
+      </div>
+      <h5 class="fw-bold">{{ m.extra_tags }}</h5>
+      <p class="text-muted small">{{ m }}</p>
+      {% endif %}{% endfor %}
+      <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">Close</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var addModal = document.getElementById('addModal');
+  var renameModal = document.getElementById('renameModal');
+
+  // Opened by a button click: clear old errors (and the Add field)
+  document.querySelectorAll('.modal').forEach(function (m) {
+    m.addEventListener('show.bs.modal', function (e) {
+      if (!e.relatedTarget) return;  // opened by script after a validation error
+      m.querySelectorAll('.field-error').forEach(function (el) { el.remove(); });
+      if (m === addModal) m.querySelector('input[type="text"]').value = '';
+    });
+  });
+
+  // Rename: prefill the clicked department
+  renameModal.addEventListener('show.bs.modal', function (e) {
+    if (!e.relatedTarget) return;
+    renameModal.querySelector('[name="department_id"]').value = e.relatedTarget.dataset.id;
+    renameModal.querySelector('input[type="text"]').value = e.relatedTarget.dataset.name;
+  });
+
+  // Reopen the modal with errors, or show the success modal
+  var state = document.getElementById('page-state').dataset;
+  if (state.openModal) {
+    new bootstrap.Modal(document.getElementById(state.openModal + 'Modal')).show();
+  }
+  if (state.hasMessage) {
+    new bootstrap.Modal(document.getElementById('successModal')).show();
+  }
+});
+</script>
+{% endblock %}
