@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=responsive-2">
 
-<div class="mb-4 d-flex gap-2">
+<div class="export-page">
+<div class="mb-4 d-flex gap-2 export-tabs">
     <button class="btn text-white fw-semibold px-4" style="background-color: #68161D;" id="tab-excel" onclick="switchTab('excel')">NCR List (Excel)</button>
     <button class="btn btn-outline-secondary bg-white fw-semibold px-4" id="tab-pdf" onclick="switchTab('pdf')">Single NCR (PDF)</button>
 </div>
 
-<form method="POST" action="{% url 'staff_export' %}" id="exportForm">
+<form method="POST" action="{% url 'staff_export' %}" id="exportForm" class="export-form">
     {% csrf_token %}
     <input type="hidden" name="export_type" id="export_type" value="excel">
-    <div class="row g-4">
-        <div class="col-lg-8">
+    <div class="row g-4 export-layout">
+        <div class="col-12 col-lg-8">
             <!-- EXCEL SECTION -->
             <div id="section-excel" class="card shadow-sm border-0 p-4 rounded-3">
                 <h5 class="fw-bold mb-4">Export filters</h5>
@@ -62,8 +63,8 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 p-4 rounded-3 h-100">
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 p-4 rounded-3 h-100 export-summary-card">
                 <h5 class="fw-bold mb-4">Export Summary</h5>
                 <div class="d-flex justify-content-between mb-3 border-bottom pb-3"><span class="text-muted">Format</span><span class="fw-semibold" id="summary_format">Excel (.xlsx)</span></div>
                 <div class="d-flex justify-content-between mb-3 border-bottom pb-3"><span class="text-muted" id="summary_records_label">Records</span><span class="fw-semibold" id="summary_records_val">{{ total_records }} NCRs</span></div>
@@ -124,4 +125,5 @@
         myModal.show();
     });
 </script>
+</div>
 {% endblock %}
