@@ -19,6 +19,7 @@
   const pdfSelect = document.getElementById('single-ncr');
   let previewTimer;
   let currentDownloadUrl;
+  let previewRequest = 0;
 
   function setTab(type) {
     const isExcel = type === 'excel';
@@ -73,6 +74,7 @@
 
   function schedulePreview() {
     window.clearTimeout(previewTimer);
+    const requestId = ++previewRequest;
     previewTimer = window.setTimeout(async () => {
       const data = new FormData(form);
       data.set('export_type', 'excel');
@@ -80,12 +82,14 @@
       try {
         const response = await fetch(form.action, { method: 'POST', body: data, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         const result = await response.json();
+        if (requestId !== previewRequest) return;
         if (!response.ok) throw new Error(result.error || 'Could not update the export summary.');
         summaryRecords.textContent = `${result.records} NCR${result.records === 1 ? '' : 's'}`;
         summaryFile.textContent = result.filename;
         empty.classList.toggle('d-none', result.records > 0);
         submit.disabled = result.records === 0 || form.querySelectorAll('#section-excel input[name="columns"]:checked').length === 0;
       } catch (err) {
+        if (requestId !== previewRequest) return;
         error.textContent = err.message;
         error.classList.remove('d-none');
       }

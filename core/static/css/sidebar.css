@@ -152,6 +152,8 @@ body {
 .topbar-right {
     margin-left: auto;
     display: flex;
+    min-width: 0;
+    flex: 0 1 auto;
     align-items: center;
     gap: 12px;
 }
@@ -159,6 +161,7 @@ body {
 .user-avatar {
     width: 32px;
     height: 32px;
+    flex: 0 0 auto;
     border-radius: 50%;
     background-color: var(--crimson-dark);
     color: white;
@@ -170,6 +173,11 @@ body {
 }
 
 .user-role {
+    min-width: 0;
+    max-width: min(32vw, 220px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 14px;
     font-weight: 500;
     color: var(--text-dark);
@@ -180,6 +188,30 @@ body {
 .content-wrapper {
     padding: 32px;
     flex-grow: 1;
+}
+
+/* Shared page title used across staff and admin screens. */
+.page-header {
+    align-items: center !important;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.page-header h1 {
+    margin: 0 0 5px;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.25;
+}
+
+.page-header p {
+    max-width: 760px;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: .875rem;
+    line-height: 1.5;
 }
 
 /* ================= RESPONSIVE MOBILE LOGIC ================= */
@@ -226,8 +258,9 @@ body {
     body.reports-responsive .mobile-brand:hover { color: var(--crimson-dark); }
     body.reports-responsive .mobile-brand > i { font-size: 12px; }
     body.reports-responsive .mobile-brand-back { font-size: 12px; font-weight: 600; }
-    body.reports-responsive .topbar-right { gap: 0; }
-    body.reports-responsive .topbar-right .user-avatar { width: 23px; height: 23px; font-size: 10px; }
+    body.reports-responsive .topbar-right { gap: 6px; }
+    body.reports-responsive .topbar-right .user-avatar { width: 28px; height: 28px; font-size: 11px; }
+    body.reports-responsive .topbar-right .user-role { max-width: min(38vw, 180px); font-size: 12px; }
     body.reports-responsive .page-header { margin-bottom: 10px !important; }
     body.reports-responsive .page-header h1 { margin-bottom: 2px; font-size: 1.15rem; }
     body.reports-responsive .page-header p { margin-bottom: 0; font-size: .68rem; }
