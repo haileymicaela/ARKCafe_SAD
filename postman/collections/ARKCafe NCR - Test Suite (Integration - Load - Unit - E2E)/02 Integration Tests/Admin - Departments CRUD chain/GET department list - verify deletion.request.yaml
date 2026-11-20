@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-departments/?q={{departmentName}}"
+method: GET
+queryParams:
+  q: "{{departmentName}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Department list 200', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('Department no longer listed', () => pm.expect(pm.response.text()).to.not.include(pm.collectionVariables.get('departmentName')));
+    language: text/javascript
+order: 6000

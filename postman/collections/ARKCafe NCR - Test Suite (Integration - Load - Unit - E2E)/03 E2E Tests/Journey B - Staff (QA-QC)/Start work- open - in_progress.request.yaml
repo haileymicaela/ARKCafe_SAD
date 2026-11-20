@@ -1,0 +1,18 @@
+$kind: http-request
+name: "Start work: open -> in_progress"
+url: "{{baseUrl}}/staff-records/{{ncrId}}"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    new_status: in_progress
+    remarks: E2E journey
+scripts:
+  - type: afterResponse
+    code: pm.test('Moved to In Progress (302)', () => pm.expect(pm.response.code).to.eql(302));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 7000

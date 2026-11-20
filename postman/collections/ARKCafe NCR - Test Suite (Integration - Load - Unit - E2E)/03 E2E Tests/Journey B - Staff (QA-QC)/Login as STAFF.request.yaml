@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/login"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    username: "{{staffEmail}}"
+    password: "{{staffPassword}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Redirected to staff dashboard', () =>
+        pm.expect(pm.response.code).to.eql(302) &&
+        pm.expect(pm.response.headers.get('Location') || '').to.include('staff-dashboard'));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 2000

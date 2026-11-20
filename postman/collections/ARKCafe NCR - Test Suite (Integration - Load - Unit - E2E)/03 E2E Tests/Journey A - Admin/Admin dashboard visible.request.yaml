@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-dashboard"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Dashboard 200', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('App shell rendered', () => pm.expect(pm.response.text()).to.include('Crimson NCR'));
+    language: text/javascript
+order: 3000

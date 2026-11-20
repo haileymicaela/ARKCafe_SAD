@@ -1,0 +1,17 @@
+$kind: http-request
+name: POST export with invalid format -> 400
+url: "{{baseUrl}}/staff/export"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    export_type: bogus
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Invalid export type rejected with 400', () => pm.expect(pm.response.code).to.eql(400));
+      pm.test('JSON error message returned', () => pm.expect(pm.response.text()).to.include('Choose a valid export format'));
+    language: text/javascript
+order: 19000

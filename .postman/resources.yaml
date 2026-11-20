@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: cf532795-f315-4c3b-8901-9e913570c051
+
+cloudResources:
+  collections:
+    ../postman/collections/ARKCafe NCR - Test Suite (Integration - Load - Unit - E2E): c5f26451-c5d8-470f-b37c-b74d424630b8
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-projects/{{projectId}}/edit"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    project_name: "{{projectName}} - EDITED"
+    client_name: Integration Client
+    project_code: "{{projectCode}}"
+    description: Edited by Postman
+scripts:
+  - type: afterResponse
+    code: pm.test('Edit project redirects (302)', () => pm.expect(pm.response.code).to.eql(302));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 3000

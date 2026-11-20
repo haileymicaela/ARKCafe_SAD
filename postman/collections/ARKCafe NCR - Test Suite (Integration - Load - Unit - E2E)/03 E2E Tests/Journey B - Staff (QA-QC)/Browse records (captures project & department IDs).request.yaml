@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/staff-records"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Records page 200', () => pm.expect(pm.response.code).to.eql(200));
+      const body = pm.response.text();
+      const pSel = body.match(/name="project"[\s\S]*?<\/select>/);
+      const pOpt = pSel && pSel[0].match(/<option value="(\d+)"/);
+      const dSel = body.match(/name="department"[\s\S]*?<\/select>/);
+      const dOpt = dSel && dSel[0].match(/<option value="(\d+)"/);
+      if (pOpt) pm.collectionVariables.set('projectId', pOpt[1]);
+      if (dOpt) pm.collectionVariables.set('departmentId', dOpt[1]);
+      pm.test('Seed data available', () => pm.expect(!!pOpt && !!dOpt).to.be.true);
+    language: text/javascript
+order: 4000

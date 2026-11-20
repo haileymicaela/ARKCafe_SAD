@@ -1,0 +1,3 @@
+$kind: collection
+description: "Complete admin journey: login -> dashboards -> create project & department -> verify -> cleanup -> logout."
+order: 1000

@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-projects/add"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    project_name: "{{projectName}}"
+    client_name: E2E Client
+    project_code: "{{projectCode}}"
+    description: E2E admin journey
+scripts:
+  - type: beforeRequest
+    code: |-
+      pm.collectionVariables.set('projectCode', 'E2E-' + Date.now());
+      pm.collectionVariables.set('projectName', 'E2E Project ' + Date.now());
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('Project created (302)', () => pm.expect(pm.response.code).to.eql(302));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 5000

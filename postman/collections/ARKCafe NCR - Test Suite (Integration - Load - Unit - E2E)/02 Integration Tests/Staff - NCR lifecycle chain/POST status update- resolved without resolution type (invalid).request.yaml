@@ -1,0 +1,19 @@
+$kind: http-request
+name: "POST status update: resolved without resolution type (invalid)"
+url: "{{baseUrl}}/staff-records/{{ncrId}}"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    new_status: resolved
+    resolution_note: ""
+    remarks: missing resolution type
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Invalid status change re-renders form (200)', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('Resolution-type error shown', () => pm.expect(pm.response.text()).to.include('Choose how this NCR was resolved'));
+    language: text/javascript
+order: 6000

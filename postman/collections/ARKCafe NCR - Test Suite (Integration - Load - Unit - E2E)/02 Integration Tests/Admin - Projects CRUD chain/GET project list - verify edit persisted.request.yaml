@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-projects/?q={{projectCode}}"
+method: GET
+queryParams:
+  q: "{{projectCode}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Project list 200', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('Edited name is visible', () => pm.expect(pm.response.text()).to.include(pm.collectionVariables.get('projectName') + ' - EDITED'));
+    language: text/javascript
+order: 4000

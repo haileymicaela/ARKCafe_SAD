@@ -1,0 +1,18 @@
+$kind: http-request
+name: "Cleanup: delete created department"
+url: "{{baseUrl}}/admin-departments"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    action: delete
+    department_id: "{{departmentId}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('Department deleted (302)', () => pm.expect(pm.response.code).to.eql(302));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 11000

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/staff-records/{{ncrId}}/edit"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    project: "{{projectId}}"
+    department: "{{departmentId}}"
+    package_no: PKG-{{uniq}}
+    cause: material
+    subject: Postman integration NCR {{uniq}} - EDITED
+    issued_date: 2026-01-15
+    required_date: 2026-02-15
+    description: Edited by the Postman integration suite
+scripts:
+  - type: afterResponse
+    code: pm.test('Edit redirects (302)', () => pm.expect(pm.response.code).to.eql(302));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 13000

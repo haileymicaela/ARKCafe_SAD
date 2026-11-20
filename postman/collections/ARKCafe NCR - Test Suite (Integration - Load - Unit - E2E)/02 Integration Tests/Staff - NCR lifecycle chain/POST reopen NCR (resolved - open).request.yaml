@@ -1,0 +1,18 @@
+$kind: http-request
+name: POST reopen NCR (resolved -> open)
+url: "{{baseUrl}}/staff-records/{{ncrId}}"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    new_status: open
+    remarks: Reopened by Postman
+scripts:
+  - type: afterResponse
+    code: pm.test('Reopen redirects (302)', () => pm.expect(pm.response.code).to.eql(302));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 11000

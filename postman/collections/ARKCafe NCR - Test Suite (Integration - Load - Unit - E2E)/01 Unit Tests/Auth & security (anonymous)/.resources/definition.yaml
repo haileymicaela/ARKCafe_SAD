@@ -1,0 +1,3 @@
+$kind: collection
+description: "Single-request behavior: redirects, 404s, CSRF enforcement, login form validation."
+order: 1000

@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-departments/?q={{departmentName}}"
+method: GET
+queryParams:
+  q: "{{departmentName}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Department visible in list', () => pm.expect(pm.response.text()).to.include(pm.collectionVariables.get('departmentName')));
+      const m = pm.response.text().match(/data-id="(\d+)"/);
+      if (m) pm.collectionVariables.set('departmentId', m[1]);
+    language: text/javascript
+order: 8000

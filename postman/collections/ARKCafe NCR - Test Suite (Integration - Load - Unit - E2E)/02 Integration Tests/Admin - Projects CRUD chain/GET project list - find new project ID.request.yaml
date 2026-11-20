@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-projects/?q={{projectCode}}"
+method: GET
+queryParams:
+  q: "{{projectCode}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Project list 200', () => pm.expect(pm.response.code).to.eql(200));
+      const body = pm.response.text();
+      pm.test('New project appears in list', () => pm.expect(body).to.include(pm.collectionVariables.get('projectCode')));
+      const m = body.match(/admin-projects\/(\d+)\/edit\//);
+      pm.test('Project row found (edit link present)', () => pm.expect(!!m).to.be.true);
+      if (m) pm.collectionVariables.set('projectId', m[1]);
+    language: text/javascript
+order: 2000
