@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import date, timedelta
 import re
 import zipfile
+import zlib
 from io import BytesIO
 from xml.sax.saxutils import escape
 
@@ -518,7 +519,7 @@ def _build_ncr_pdf(ncr, options):
         lines += ['', f'Attachments ({len(attachments)}):']
         lines += [f'{attachment.file_name} ({attachment.file_type})' for attachment in attachments] or ['None']
         if attachments:
-            lines += ['Attachment files are embedded in this PDF.']
+            lines += ['Photos are shown on pages after this report; original files are attached to the PDF.']
     escaped = []
     for line in lines:
         line = str(line).encode('ascii', 'replace').decode('ascii')
@@ -538,34 +539,51 @@ def _build_ncr_pdf(ncr, options):
         stream = '\n'.join(commands).encode('latin-1')
         objects.append(f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 3 0 R >> >> /Contents {stream_id} 0 R >>'.encode())
         objects.append(b'<< /Length ' + str(len(stream)).encode() + b' >>\nstream\n' + stream + b'\nendstream')
-    kids = ' '.join(f'{page_id} 0 R' for page_id in page_ids)
-    objects[1] = f'<< /Type /Pages /Kids [{kids}] /Count {len(page_ids)} >>'.encode()
     embedded_names = []
+    associated_files = []
     photo_pages = []
+    used_names = set()
     for attachment in attachments:
         embedded_id = len(objects) + 1
         data = bytes(attachment.file_data)
         mime = (attachment.file_type or 'application/octet-stream').replace('/', '#2F').replace(';', '#3B')
         objects.append(
-            f'<< /Type /EmbeddedFile /Subtype /{mime} /Length {len(data)} >>\nstream\n'.encode()
+            f'<< /Type /EmbeddedFile /Subtype /{mime} /Params << /Size {len(data)} >> /Length {len(data)} >>\nstream\n'.encode()
             + data + b'\nendstream'
         )
         filespec_id = len(objects) + 1
         safe_name = attachment.file_name.encode('ascii', 'replace').decode('ascii')
+        if safe_name in used_names:
+            stem, dot, extension = safe_name.rpartition('.')
+            stem = stem if dot else safe_name
+            extension = f'.{extension}' if dot else ''
+            suffix = 2
+            while f'{stem} ({suffix}){extension}' in used_names:
+                suffix += 1
+            safe_name = f'{stem} ({suffix}){extension}'
+        used_names.add(safe_name)
         safe_name = safe_name.replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
         objects.append(
-            f'<< /Type /Filespec /F ({safe_name}) /UF ({safe_name}) /EF << /F {embedded_id} 0 R >> >>'.encode()
+            f'<< /Type /Filespec /F ({safe_name}) /UF ({safe_name}) /AFRelationship /Data /EF << /F {embedded_id} 0 R >> >>'.encode()
         )
-        embedded_names.append(f'({safe_name}) {filespec_id} 0 R')
-        dimensions = _jpeg_dimensions(data) if (attachment.file_type or '').lower() in {'image/jpeg', 'image/jpg'} else None
-        if dimensions:
-            photo_pages.append((safe_name, data, dimensions[0], dimensions[1]))
+        embedded_names.append((safe_name, filespec_id))
+        associated_files.append(f'{filespec_id} 0 R')
+        mime_type = (attachment.file_type or '').lower().split(';', 1)[0].strip()
+        if mime_type in {'image/jpeg', 'image/jpg'}:
+            dimensions = _jpeg_dimensions(data)
+            if dimensions:
+                photo_pages.append((safe_name, data, dimensions[0], dimensions[1], 'DCTDecode'))
+        elif mime_type == 'image/png':
+            png = _png_rgb_image(data)
+            if png:
+                image_data, image_width, image_height = png
+                photo_pages.append((safe_name, zlib.compress(image_data), image_width, image_height, 'FlateDecode'))
 
-    for name, data, image_width, image_height in photo_pages:
+    for name, data, image_width, image_height, image_filter in photo_pages:
         image_id = len(objects) + 1
         objects.append(
             f'<< /Type /XObject /Subtype /Image /Width {image_width} /Height {image_height} '
-            f'/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {len(data)} >>\nstream\n'.encode()
+            f'/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /{image_filter} /Length {len(data)} >>\nstream\n'.encode()
             + data + b'\nendstream'
         )
         page_id = len(objects) + 1
@@ -586,10 +604,15 @@ def _build_ncr_pdf(ncr, options):
         )
         objects.append(b'<< /Length ' + str(len(commands)).encode() + b' >>\nstream\n' + commands + b'\nendstream')
         page_ids.append(page_id)
+    kids = ' '.join(f'{page_id} 0 R' for page_id in page_ids)
+    objects[1] = f'<< /Type /Pages /Kids [{kids}] /Count {len(page_ids)} >>'.encode()
     names = ''
     if embedded_names:
-        names = ' /Names << /EmbeddedFiles << /Names [' + ' '.join(embedded_names) + '] >> >>'
-    objects[0] = f'<< /Type /Catalog /Pages 2 0 R{names} >>'.encode()
+        name_entries = ' '.join(f'({name}) {object_id} 0 R' for name, object_id in sorted(embedded_names))
+        names = ' /Names << /EmbeddedFiles << /Names [' + name_entries + '] >> >>'
+    associated = ' /AF [' + ' '.join(associated_files) + ']' if associated_files else ''
+    page_mode = ' /PageMode /UseAttachments' if associated_files else ''
+    objects[0] = f'<< /Type /Catalog /Pages 2 0 R{names}{associated}{page_mode} >>'.encode()
     pdf = bytearray(b'%PDF-1.4\n')
     offsets = [0]
     for index, obj in enumerate(objects, 1):
@@ -629,3 +652,92 @@ def _jpeg_dimensions(data):
             return (width, height) if width and height else None
         index += segment_length
     return None
+
+
+def _png_rgb_image(data):
+    """Decode common 8-bit non-interlaced PNGs to RGB for PDF image pages."""
+    if not data.startswith(b'\x89PNG\r\n\x1a\n'):
+        return None
+    index = 8
+    width = height = bit_depth = color_type = interlace = None
+    compressed = []
+    while index + 12 <= len(data):
+        length = int.from_bytes(data[index:index + 4], 'big')
+        kind = data[index + 4:index + 8]
+        start, end = index + 8, index + 8 + length
+        if end + 4 > len(data):
+            return None
+        chunk = data[start:end]
+        if kind == b'IHDR' and len(chunk) == 13:
+            width, height = int.from_bytes(chunk[:4], 'big'), int.from_bytes(chunk[4:8], 'big')
+            bit_depth, color_type, interlace = chunk[8], chunk[9], chunk[12]
+        elif kind == b'IDAT':
+            compressed.append(chunk)
+        elif kind == b'IEND':
+            break
+        index = end + 4
+
+    channels = {0: 1, 2: 3, 4: 2, 6: 4}.get(color_type)
+    if (not width or not height or width * height > 12_000_000 or bit_depth != 8
+            or interlace != 0 or not channels or not compressed):
+        return None
+    row_size = width * channels
+    expected_size = height * (row_size + 1)
+    try:
+        decoder = zlib.decompressobj()
+        raw = decoder.decompress(b''.join(compressed), expected_size + 1)
+        if len(raw) != expected_size or not decoder.eof:
+            return None
+    except zlib.error:
+        return None
+
+    output = bytearray(width * height * 3)
+    previous = bytearray(row_size)
+    raw_position = output_position = 0
+    for _ in range(height):
+        filter_type = raw[raw_position]
+        raw_position += 1
+        row = bytearray(raw[raw_position:raw_position + row_size])
+        raw_position += row_size
+        if filter_type > 4:
+            return None
+        for i in range(row_size):
+            left = row[i - channels] if i >= channels else 0
+            above = previous[i]
+            upper_left = previous[i - channels] if i >= channels else 0
+            if filter_type == 1:
+                predictor = left
+            elif filter_type == 2:
+                predictor = above
+            elif filter_type == 3:
+                predictor = (left + above) // 2
+            elif filter_type == 4:
+                estimate = left + above - upper_left
+                distances = (abs(estimate - left), abs(estimate - above), abs(estimate - upper_left))
+                predictor = left if distances[0] <= min(distances[1:]) else (
+                    above if distances[1] <= distances[2] else upper_left
+                )
+            else:
+                predictor = 0
+            row[i] = (row[i] + predictor) & 255
+        for x in range(width):
+            source, target = x * channels, output_position + x * 3
+            if color_type == 0:
+                gray = row[source]
+                output[target:target + 3] = bytes((gray, gray, gray))
+            elif color_type == 2:
+                output[target:target + 3] = row[source:source + 3]
+            elif color_type == 4:
+                gray, alpha = row[source], row[source + 1]
+                value = (gray * alpha + 255 * (255 - alpha) + 127) // 255
+                output[target:target + 3] = bytes((value, value, value))
+            else:
+                red, green, blue, alpha = row[source:source + 4]
+                output[target:target + 3] = bytes((
+                    (red * alpha + 255 * (255 - alpha) + 127) // 255,
+                    (green * alpha + 255 * (255 - alpha) + 127) // 255,
+                    (blue * alpha + 255 * (255 - alpha) + 127) // 255,
+                ))
+        previous = row
+        output_position += width * 3
+    return bytes(output), width, height
