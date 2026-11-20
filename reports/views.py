@@ -370,19 +370,38 @@ EXPORT_COLUMNS = {
 
 def _filtered_export_ncrs(data):
     queryset = NcrRecord.objects.select_related('project', 'department', 'created_by').all()
-    if data.get('project'):
-        queryset = queryset.filter(project_id=data['project'])
-    if data.get('cause') in dict(NcrRecord.CAUSE_CHOICES):
-        queryset = queryset.filter(cause=data['cause'])
-    if data.get('status') in dict(NcrRecord.STATUS_CHOICES):
-        queryset = queryset.filter(status=data['status'])
-    if data.get('package_no', '').strip():
-        queryset = queryset.filter(package_no__icontains=data['package_no'].strip())
+    project_id = (data.get('project') or '').strip()
+    if project_id:
+        if project_id.isdecimal():
+            queryset = queryset.filter(project_id=int(project_id))
+        else:
+            return queryset.none()
+
+    cause = (data.get('cause') or '').strip()
+    if cause:
+        if cause in dict(NcrRecord.CAUSE_CHOICES):
+            queryset = queryset.filter(cause=cause)
+        else:
+            return queryset.none()
+
+    status = (data.get('status') or '').strip()
+    if status:
+        if status in dict(NcrRecord.STATUS_CHOICES):
+            queryset = queryset.filter(status=status)
+        else:
+            return queryset.none()
+
+    package_no = (data.get('package_no') or '').strip()
+    if package_no:
+        queryset = queryset.filter(package_no__icontains=package_no)
+
+    start_value = (data.get('start_date') or '').strip()
+    end_value = (data.get('end_date') or '').strip()
     try:
-        start = date.fromisoformat(data.get('start_date', '')) if data.get('start_date') else None
-        end = date.fromisoformat(data.get('end_date', '')) if data.get('end_date') else None
+        start = date.fromisoformat(start_value) if start_value else None
+        end = date.fromisoformat(end_value) if end_value else None
     except ValueError:
-        start = end = None
+        return queryset.none()
     if start and end and start > end:
         start, end = end, start
     if start:
