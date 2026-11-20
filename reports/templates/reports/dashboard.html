@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=responsive-2">
+
+<div class="row mb-4 g-3 dashboard-summary-grid">
+    <div class="{% if is_staff %}col-6{% else %}col-6 col-md-3{% endif %}">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Total Open NCRs</p>
+            <h2 class="mb-1 fw-bold">{{ total_open }}</h2>
+            {% if not is_staff %}<small class="text-muted">across {{ active_projects }} projects</small>{% endif %}
+        </div>
+    </div>
+    <div class="{% if is_staff %}col-6{% else %}col-6 col-md-3{% endif %}">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Total Closed NCRs</p>
+            <h2 class="mb-1 fw-bold">{{ total_closed }}</h2>
+            {% if not is_staff %}<small class="text-muted">{{ total_closed|add:total_open|default:0 }} total NCRs</small>{% endif %}
+        </div>
+    </div>
+    {% if not is_staff %}
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Active Users</p>
+            <h2 class="mb-1 fw-bold">{{ active_users }}</h2>
+            <small class="text-muted">registered accounts</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
+            <p class="text-muted mb-1 fs-6">Active Projects</p>
+            <h2 class="mb-1 fw-bold">{{ active_projects }}</h2>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-3 dashboard-content-grid">
+    <div class="{% if not is_staff %}col-12 col-lg-8{% else %}col-12{% endif %}">
+        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
+            <h5 class="fw-bold mb-3">NCR Counts by Cause</h5>
+            <div class="dashboard-chart" id="causeChart"></div>
+        </div>
+        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
+            <h5 class="fw-bold mb-3">NCR Counts by Project</h5>
+            <div class="dashboard-chart" id="projectChart"></div>
+            <div class="text-muted mt-3 small">Showing 1–{{ project_data|length }} of {{ active_projects }} Projects</div>
+        </div>
+    </div>
+
+    {% if not is_staff %}
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm border-0 mb-4 p-4 h-100 rounded-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Recent Activity</h5>
+                <a href="{% url 'admin_recent_activity' %}" class="text-decoration-none text-crimson">View all</a>
+            </div>
+            <div class="activity-feed">
+                {% for act in recent_activities %}
+                <div class="d-flex mb-3 pb-3 border-bottom position-relative">
+                    <div class="me-3 mt-1">
+                        {% if act.action_type == 'created' %}<span class="dot bg-success"></span>
+                        {% elif act.action_type == 'deleted' %}<span class="dot bg-danger"></span>
+                        {% else %}<span class="dot bg-primary"></span>{% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="mb-0 fw-semibold fs-6">{{ act.action_type|title }} {{ act.entity_type }}</p>
+                        <small class="text-muted">{{ act.entity_label }}<br>by {{ act.user.full_name }}</small>
+                    </div>
+                    <div class="text-end ms-2">
+                        <small class="text-muted text-nowrap">{{ act.created_at|date:"g:i A" }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ cause_data|json_script:"cause-chart-data" }}
+{{ project_data|json_script:"project-chart-data" }}
+<script src="{% static 'reports/js/dashboard_charts.js' %}?v=dashboard-svg-1" defer></script>
+{% endblock %}

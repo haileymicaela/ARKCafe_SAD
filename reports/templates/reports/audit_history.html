@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=audit-mobile-4">
+{% endblock %}
+{% block content %}
+<form method="GET" class="audit-toolbar mb-3">
+    <div class="audit-search">
+        <button type="submit" class="audit-search-submit" aria-label="Search"><i class="bi bi-search" aria-hidden="true"></i></button>
+        <input id="audit-search-input" type="search" name="q" value="{{ search_query }}" placeholder="Search by NCR no., user, or remarks..." aria-label="Search by NCR number, user, or remarks">
+    </div>
+    <input type="hidden" name="ordering" value="{{ ordering }}">
+
+    <details class="audit-filter">
+        <summary class="audit-action{% if status_filter or start_date or end_date %} is-active{% endif %}">
+            <i class="bi bi-sliders2" aria-hidden="true"></i> Filters
+            {% if status_filter or start_date or end_date %}<span class="audit-filter-count" aria-label="Filters active"></span>{% endif %}
+            <i class="bi bi-chevron-down audit-control-chevron" aria-hidden="true"></i>
+        </summary>
+        <div class="audit-filter-panel">
+            <span class="audit-sheet-handle" aria-hidden="true"></span>
+            <div class="audit-filter-heading">Filter audit history</div>
+            <label class="audit-field-label" for="audit-status">New status</label>
+            <select id="audit-status" name="status" class="form-select">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div class="audit-date-fields">
+                <div>
+                    <label class="audit-field-label" for="audit-start-date">From</label>
+                    <input id="audit-start-date" class="form-control" type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <label class="audit-field-label" for="audit-end-date">To</label>
+                    <input id="audit-end-date" class="form-control" type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+            </div>
+            <div class="audit-filter-actions">
+                <a href="?q={{ search_query|urlencode }}&amp;ordering={{ ordering }}" class="audit-clear">Clear</a>
+                <button type="submit" class="audit-apply">Apply filters</button>
+            </div>
+        </div>
+    </details>
+
+    <button class="audit-action audit-sort" type="submit" name="ordering" value="{% if ordering == 'newest' %}oldest{% else %}newest{% endif %}" title="Switch to {% if ordering == 'newest' %}oldest first{% else %}newest first{% endif %}">
+        {% if ordering == 'newest' %}<i class="bi bi-sort-down" aria-hidden="true"></i>{% else %}<i class="bi bi-sort-up" aria-hidden="true"></i>{% endif %}
+        {% if ordering == 'newest' %}Newest first{% else %}Oldest first{% endif %}
+        <i class="bi bi-chevron-down audit-control-chevron" aria-hidden="true"></i>
+    </button>
+</form>
+
+<div class="card shadow-sm border-0 rounded-3 overflow-hidden audit-results-card">
+    <div class="table-responsive audit-desktop-view">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="py-3 px-4 text-muted fw-semibold">Date &amp; time</th>
+                    <th class="py-3 text-muted fw-semibold">NCR no.</th>
+                    <th class="py-3 text-muted fw-semibold">Old status</th>
+                    <th class="py-3 text-muted fw-semibold">New status</th>
+                    <th class="py-3 text-muted fw-semibold">Changed by</th>
+                    <th class="py-3 text-muted fw-semibold">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td class="px-4 text-muted small">{{ log.changed_at|date:"M d, Y - g:i A" }}</td>
+                    <td class="fw-semibold text-dark">{{ log.ncr.reference_no|default:"-" }}</td>
+                    <td>
+                        {% if not log.old_status %}<span class="badge rounded-pill bg-light text-secondary border px-3 py-2">N/A</span>
+                        {% elif log.old_status == 'open' %}<span class="badge badge-open rounded-pill px-3 py-2">Open</span>
+                        {% elif log.old_status == 'in_progress' %}<span class="badge badge-progress rounded-pill px-3 py-2">In Progress</span>
+                        {% elif log.old_status == 'resolved' %}<span class="badge badge-resolved rounded-pill px-3 py-2">Resolved</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if log.new_status == 'open' %}<span class="badge badge-open rounded-pill px-3 py-2"><span class="dot bg-danger me-1"></span>Open</span>
+                        {% elif log.new_status == 'in_progress' %}<span class="badge badge-progress rounded-pill px-3 py-2"><span class="dot bg-warning me-1"></span>In Progress</span>
+                        {% elif log.new_status == 'resolved' %}<span class="badge badge-resolved rounded-pill px-3 py-2"><span class="dot bg-success me-1"></span>Resolved</span>{% endif %}
+                    </td>
+                    <td class="text-muted small">{{ log.user.full_name }}</td>
+                    <td class="text-muted small">{{ log.remarks|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>No audit records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="audit-mobile-view">
+        <div class="audit-mobile-list" data-audit-mobile-list>
+            {% for log in page_obj %}
+            <article class="audit-mobile-card">
+                <div class="audit-mobile-card-heading">
+                    <strong>{{ log.ncr.reference_no|default:"-" }}</strong>
+                    <time>{{ log.changed_at|date:"M j, Y - g:i A" }}</time>
+                </div>
+                <div class="audit-mobile-status-flow">
+                    {% if not log.old_status %}<span class="audit-mobile-status status-na">N/A</span>
+                    {% elif log.old_status == 'open' %}<span class="audit-mobile-status status-open">Open</span>
+                    {% elif log.old_status == 'in_progress' %}<span class="audit-mobile-status status-progress">In Progress</span>
+                    {% elif log.old_status == 'resolved' %}<span class="audit-mobile-status status-resolved">Resolved</span>{% endif %}
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    {% if log.new_status == 'open' %}<span class="audit-mobile-status status-open">Open</span>
+                    {% elif log.new_status == 'in_progress' %}<span class="audit-mobile-status status-progress">In Progress</span>
+                    {% elif log.new_status == 'resolved' %}<span class="audit-mobile-status status-resolved">Resolved</span>{% endif %}
+                </div>
+                <p class="audit-mobile-user">By {{ log.user.full_name }}</p>
+                <p class="audit-mobile-remarks">{{ log.remarks|default:"No remarks recorded." }}</p>
+            </article>
+            {% empty %}
+            <div class="audit-mobile-empty"><i class="bi bi-inbox" aria-hidden="true"></i><span>No audit records found.</span></div>
+            {% endfor %}
+        </div>
+        <div class="audit-mobile-footer">
+            <small data-audit-count data-loaded="{{ page_obj.end_index|default:0 }}" data-total="{{ page_obj.paginator.count|default:0 }}">{% if page_obj.paginator.count %}Showing 1–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} activities{% else %}Showing 0–0 of 0 activities{% endif %}</small>
+            {% if page_obj.has_next %}<a class="audit-load-more" data-load-more href="?{{ query_string }}{% if query_string %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Load More</a>{% endif %}
+        </div>
+    </div>
+    <div class="audit-footer audit-desktop-footer">
+        <small class="text-muted">Showing {{ page_obj.start_index|default:0 }}–{{ page_obj.end_index|default:0 }} of {{ page_obj.paginator.count|default:0 }} entries</small>
+        <nav class="audit-pagination" aria-label="Audit history pages">
+            {% if page_obj.has_previous %}<a href="?{{ query_string }}{% if query_string %}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+            {% else %}<span class="is-disabled">Prev</span>{% endif %}
+            {% if page_obj.has_next %}<a class="next-page" href="?{{ query_string }}{% if query_string %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+            {% else %}<span class="next-page is-disabled">Next</span>{% endif %}
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'reports/js/audit_history.js' %}"></script>
+{% endblock %}
