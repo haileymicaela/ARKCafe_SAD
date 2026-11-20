@@ -129,16 +129,15 @@
             {{ n.issued_date|date:"M d, Y" }}
           </div>
           
-          <!-- Days Open (Inayos para "days" lang) -->
+          <!-- Days Open (FIX) -->
           <div class="col-12 col-lg-auto text-end d-flex justify-content-between justify-content-lg-end align-items-center gap-3">
             {% if n.status == 'resolved' %}
               <span class="text-muted">—</span>
             {% else %}
               <span class="text-muted" style="font-size: 14px;">
+                <!-- Gagamit tayo ng math sa template para makuha ang days difference -->
                 {% now "Y-m-d" as today_str %}
-                {% with days=n.issued_date|timesince:today_str %}
-                  {{ days|slice:":-7" }}
-                {% endwith %}
+                {{ n.issued_date|timesince:today_str|slice:":-7" }}
               </span>
             {% endif %}
             <a href="{% url 'ncr_detail' n.pk %}" class="text-muted"><i class="bi bi-chevron-right" style="font-size: 12px;"></i></a>
