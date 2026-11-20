@@ -173,8 +173,8 @@
     body.reports-responsive .mobile-brand,
     body.reports-responsive .mobile-brand:visited { display: inline-flex; align-items: center; gap: 6px; color: #68161d !important; text-decoration: none !important; font-size: 14px; font-weight: 700; }
     body.reports-responsive .mobile-brand-back { font-size: 12px; font-weight: 600; }
-    body.reports-responsive .topbar-right { gap: 0; margin-left: auto; }
-    body.reports-responsive .topbar-right .user-avatar { width: 23px; height: 23px; font-size: 10px; }
+    body.reports-responsive .topbar-right { gap: 6px; margin-left: auto; }
+    body.reports-responsive .topbar-right .user-avatar { width: 28px; height: 28px; font-size: 11px; }
     body.reports-responsive .dashboard-time-filter { flex: 1 0 100%; }
     body.reports-responsive .dashboard-time-filter > summary { width: 100%; justify-content: center; }
 }

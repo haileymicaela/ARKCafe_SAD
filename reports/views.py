@@ -522,6 +522,7 @@ def _build_ncr_pdf(ncr, options):
     kids = ' '.join(f'{page_id} 0 R' for page_id in page_ids)
     objects[1] = f'<< /Type /Pages /Kids [{kids}] /Count {len(page_ids)} >>'.encode()
     embedded_names = []
+    photo_pages = []
     for attachment in attachments:
         embedded_id = len(objects) + 1
         data = bytes(attachment.file_data)
@@ -537,6 +538,35 @@ def _build_ncr_pdf(ncr, options):
             f'<< /Type /Filespec /F ({safe_name}) /UF ({safe_name}) /EF << /F {embedded_id} 0 R >> >>'.encode()
         )
         embedded_names.append(f'({safe_name}) {filespec_id} 0 R')
+        dimensions = _jpeg_dimensions(data) if (attachment.file_type or '').lower() in {'image/jpeg', 'image/jpg'} else None
+        if dimensions:
+            photo_pages.append((safe_name, data, dimensions[0], dimensions[1]))
+
+    for name, data, image_width, image_height in photo_pages:
+        image_id = len(objects) + 1
+        objects.append(
+            f'<< /Type /XObject /Subtype /Image /Width {image_width} /Height {image_height} '
+            f'/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {len(data)} >>\nstream\n'.encode()
+            + data + b'\nendstream'
+        )
+        page_id = len(objects) + 1
+        stream_id = page_id + 1
+        max_width, max_height = 532, 690
+        scale = min(max_width / image_width, max_height / image_height)
+        draw_width, draw_height = image_width * scale, image_height * scale
+        x, y = (612 - draw_width) / 2, 760 - draw_height
+        safe_title = name.replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')[:100]
+        commands = (
+            f'BT /F1 12 Tf 40 800 Td ({safe_title}) Tj ET\n'
+            f'q {draw_width:.2f} 0 0 {draw_height:.2f} {x:.2f} {y:.2f} cm /Im1 Do Q'
+        ).encode('latin-1', 'replace')
+        objects.append(
+            f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] '
+            f'/Resources << /Font << /F1 3 0 R >> /XObject << /Im1 {image_id} 0 R >> >> '
+            f'/Contents {stream_id} 0 R >>'.encode()
+        )
+        objects.append(b'<< /Length ' + str(len(commands)).encode() + b' >>\nstream\n' + commands + b'\nendstream')
+        page_ids.append(page_id)
     names = ''
     if embedded_names:
         names = ' /Names << /EmbeddedFiles << /Names [' + ' '.join(embedded_names) + '] >> >>'
@@ -552,3 +582,31 @@ def _build_ncr_pdf(ncr, options):
         pdf.extend(f'{offset:010d} 00000 n \n'.encode())
     pdf.extend(f'trailer\n<< /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF'.encode())
     return bytes(pdf)
+
+
+def _jpeg_dimensions(data):
+    """Return a JPEG's pixel dimensions, or None for malformed/non-JPEG data."""
+    if not data.startswith(b'\xff\xd8'):
+        return None
+    index = 2
+    while index + 4 <= len(data):
+        if data[index] != 0xFF:
+            index += 1
+            continue
+        marker = data[index + 1]
+        index += 2
+        if marker in {0xD8, 0xD9} or 0xD0 <= marker <= 0xD7:
+            continue
+        if index + 2 > len(data):
+            return None
+        segment_length = int.from_bytes(data[index:index + 2], 'big')
+        if segment_length < 2 or index + segment_length > len(data):
+            return None
+        if marker in {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}:
+            if segment_length < 7:
+                return None
+            height = int.from_bytes(data[index + 3:index + 5], 'big')
+            width = int.from_bytes(data[index + 5:index + 7], 'big')
+            return (width, height) if width and height else None
+        index += segment_length
+    return None
