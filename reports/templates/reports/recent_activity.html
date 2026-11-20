@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=activity-mobile-4">
+<link rel="stylesheet" href="{% static 'reports/css/recent_activity.css' %}?v=activity-mobile-4">
+{% endblock %}
+{% block content %}
+<form method="GET" class="activity-toolbar mb-3" id="activity-filter-form">
+    <label class="activity-search" for="activity-search-input">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input id="activity-search-input" type="search" name="q" value="{{ search_query }}" placeholder="Search by name or entity..." aria-label="Search by name or entity">
+    </label>
+    <input type="hidden" name="entity" value="{{ entity_filter }}" data-filter-value="entity">
+    <input type="hidden" name="action" value="{{ action_filter }}" data-filter-value="action">
+    <input type="hidden" name="time_filter" value="{{ time_filter }}" data-filter-value="time_filter">
+
+    <details class="activity-dropdown">
+        <summary class="activity-filter-button">{% if entity_filter %}{{ entity_filter_label }}{% else %}Entity{% endif %}<i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+        <div class="activity-dropdown-menu">
+            <div class="activity-sheet-heading"><span class="activity-sheet-handle" aria-hidden="true"></span></div>
+            <button type="button" data-filter-key="entity" data-filter-choice="">All entities</button>
+            {% for entity, label in entity_options %}
+            <button type="button" data-filter-key="entity" data-filter-choice="{{ entity }}" {% if entity_filter == entity %}aria-current="true"{% endif %}>{{ label }}</button>
+            {% endfor %}
+        </div>
+    </details>
+
+    <details class="activity-dropdown">
+        <summary class="activity-filter-button">{% if action_filter %}{{ action_filter_label }}{% else %}Action{% endif %}<i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+        <div class="activity-dropdown-menu">
+            <div class="activity-sheet-heading"><span class="activity-sheet-handle" aria-hidden="true"></span></div>
+            <button type="button" data-filter-key="action" data-filter-choice="">All actions</button>
+            {% for action, label in action_options %}
+            <button type="button" data-filter-key="action" data-filter-choice="{{ action }}" {% if action_filter == action %}aria-current="true"{% endif %}>{{ label }}</button>
+            {% endfor %}
+        </div>
+    </details>
+
+    <details class="activity-dropdown activity-time-dropdown" {% if time_filter == 'custom' %}open{% endif %}>
+        <summary class="activity-filter-button">
+            {% if time_filter == 'today' %}Today
+            {% elif time_filter == '7_days' %}Last 7 days
+            {% elif time_filter == '30_days' %}Last 30 days
+            {% elif time_filter == 'custom' %}Custom range...
+            {% else %}All time{% endif %}
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </summary>
+        <div class="activity-dropdown-menu activity-time-menu">
+            <div class="activity-sheet-heading"><span class="activity-sheet-handle" aria-hidden="true"></span><strong>Date range</strong></div>
+            <button type="button" data-filter-key="time_filter" data-filter-choice="all" {% if time_filter == 'all' %}aria-current="true"{% endif %}>All time</button>
+            <button type="button" data-filter-key="time_filter" data-filter-choice="today" {% if time_filter == 'today' %}aria-current="true"{% endif %}>Today</button>
+            <button type="button" data-filter-key="time_filter" data-filter-choice="7_days" {% if time_filter == '7_days' %}aria-current="true"{% endif %}>Last 7 days</button>
+            <button type="button" data-filter-key="time_filter" data-filter-choice="30_days" {% if time_filter == '30_days' %}aria-current="true"{% endif %}>Last 30 days</button>
+            <button type="button" data-activity-custom-toggle>Custom range...</button>
+            <div class="activity-custom-range" data-activity-custom-range {% if time_filter != 'custom' %}hidden{% endif %}>
+                <label for="activity-start-date">From</label>
+                <input id="activity-start-date" type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                <label for="activity-end-date">To</label>
+                <input id="activity-end-date" type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                <button type="button" class="activity-custom-apply" data-activity-custom-apply>Apply dates</button>
+            </div>
+        </div>
+    </details>
+</form>
+
+<div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table activity-table activity-desktop-view table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="py-3 px-4 text-muted">Date &amp; time</th>
+                    <th class="py-3 text-muted">Action</th>
+                    <th class="py-3 text-muted">Entity</th>
+                    <th class="py-3 text-muted">Name</th>
+                    <th class="py-3 text-muted">Changes</th>
+                    <th class="py-3 text-muted">Performed by</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for act in page_obj %}
+                <tr>
+                    <td class="px-4 text-muted small">{{ act.created_at|date:"M d, g:i A" }}</td>
+                    <td>
+                        <span class="activity-action-badge action-{{ act.action_type|slugify }}">{{ act.action_type|cut:'_'|title }}</span>
+                    </td>
+                    <td class="text-muted">{{ act.entity_type|title }}</td>
+                    <td class="activity-name">{{ act.entity_label }}</td>
+                    <td class="text-muted small">{% if act.old_value and act.new_value %}{{ act.old_value }} &rarr; {{ act.new_value }}{% else %}&mdash;{% endif %}</td>
+                    <td class="text-muted small">{{ act.user.full_name }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted">No activities match these filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="activity-mobile-view">
+        <div class="activity-mobile-list" data-activity-mobile-list>
+            {% for act in page_obj %}
+            <article class="activity-mobile-card">
+                <div class="activity-mobile-card-heading">
+                    <span>{{ act.entity_type|title }} {{ act.action_type|cut:'_'|title }}</span>
+                    <span class="activity-action-badge action-{{ act.action_type|slugify }}">{{ act.action_type|cut:'_'|title }}</span>
+                </div>
+                <strong class="activity-mobile-name">{{ act.entity_label }}</strong>
+                <div class="activity-mobile-meta">{{ act.created_at|date:"M d, g:i A" }} <span>·</span> {{ act.user.full_name }}</div>
+                {% if act.old_value and act.new_value %}<div class="activity-mobile-changes">{{ act.old_value }} &rarr; {{ act.new_value }}</div>{% endif %}
+            </article>
+            {% empty %}
+            <div class="activity-mobile-empty">No activities match these filters.</div>
+            {% endfor %}
+        </div>
+        <div class="activity-mobile-footer">
+            <small data-activity-count data-loaded="{{ page_obj.end_index|default:0 }}" data-total="{{ page_obj.paginator.count|default:0 }}">{% if page_obj.paginator.count %}Showing 1–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} activities{% else %}Showing 0–0 of 0 activities{% endif %}</small>
+            {% if page_obj.has_next %}<a class="activity-load-more" data-activity-load-more href="?{{ query_string }}{% if query_string %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Load More</a>{% endif %}
+        </div>
+    </div>
+    <div class="activity-table-footer activity-desktop-footer">
+        <small class="text-muted">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} activities</small>
+        <nav class="activity-pagination" aria-label="Activity log pages">
+            {% if page_obj.has_previous %}<a href="?{{ query_string }}{% if query_string %}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+            {% else %}<span class="is-disabled">Prev</span>{% endif %}
+            {% if page_obj.has_next %}<a class="next-page" href="?{{ query_string }}{% if query_string %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+            {% else %}<span class="next-page is-disabled">Next</span>{% endif %}
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'reports/js/recent_activity.js' %}"></script>
+{% endblock %}
