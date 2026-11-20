@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  .btn-crimson { background:#6b0f12; color:#fff; border:0; font-weight:600; }
+  .btn-crimson:hover { background:#550c0f; color:#fff; }
+  .btn-danger-solid { background:#dc2626; color:#fff; border:0; font-weight:600; }
+  .btn-danger-solid:hover { background:#b91c1c; color:#fff; }
+  .btn-soft { background:#eceef1; color:#111827; border:0; font-weight:600; }
+  .btn-soft:hover { background:#dfe2e6; }
+
+  .ar-search { position:relative; margin-bottom:16px; }
+  .ar-search input { width:100%; padding:9px 12px 9px 34px; font-size:13px;
+                     border:1px solid #e5e7eb; border-radius:8px; background:#fff; outline:none; }
+  .ar-search input:focus { border-color:#6b0f12; }
+  .ar-search .ico { position:absolute; left:12px; top:50%; transform:translateY(-50%);
+                    color:#9ca3af; font-size:13px; pointer-events:none; }
+
+  .ar-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+  .ar-table { margin:0; }
+  .ar-table th { font-size:11px; color:#6b7280; font-weight:600; padding:12px 16px;
+                 background:#fff; border-bottom:1px solid #e5e7eb; }
+  .ar-table td { padding:14px 16px; font-size:13px; vertical-align:middle;
+                 border-bottom:1px solid #f1f1f1; }
+  .ar-table tr:last-child td { border-bottom:0; }
+  .ar-name { font-weight:700; color:#111827; }
+  .ar-muted { color:#6b7280; }
+  .btn-act { background:#eceef1; color:#111827; border:0; font-size:12px; font-weight:600;
+             padding:5px 10px; border-radius:6px; }
+  .btn-act:hover { background:#dfe2e6; }
+
+  .am-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+                 z-index:2000; align-items:center; justify-content:center; padding:16px; }
+  .am-backdrop.open { display:flex; }
+  .am-box { background:#fff; border-radius:14px; width:100%; max-width:420px;
+            max-height:92vh; overflow:auto; box-shadow:0 20px 50px rgba(0,0,0,.25); }
+  .am-head { padding:20px 22px 14px; position:relative; border-bottom:1px solid #eee; }
+  .am-title { font-size:16px; font-weight:700; margin:0; }
+  .am-sub { font-size:12px; color:#6b7280; margin:2px 0 0; }
+  .am-close { position:absolute; top:18px; right:18px; width:26px; height:26px; border:0;
+              background:#eceef1; border-radius:6px; line-height:1; color:#374151; cursor:pointer; }
+  .am-body { padding:16px 22px 6px; }
+  .am-foot { padding:14px 22px; background:#f9f6f5; display:flex; justify-content:flex-end; gap:8px; }
+
+  .am-field { margin-bottom:12px; }
+  .am-field label { font-size:12px; font-weight:700; display:block; margin-bottom:4px; }
+  .am-field .req { color:#dc2626; }
+  .am-field input, .am-field select { width:100%; padding:9px 11px; font-size:13px;
+            border:1px solid #d1d5db; border-radius:8px; outline:none; background:#fff; }
+  .am-field input:focus, .am-field select:focus { border-color:#6b0f12; }
+  .am-field.has-error input, .am-field.has-error select { border-color:#dc2626; }
+  .am-err { color:#dc2626; font-size:11px; margin-top:4px; }
+  .am-hint { color:#6b7280; font-size:11px; margin-top:4px; }
+
+  .am-center { padding:24px 22px 20px; text-align:center; }
+  .am-check { width:36px; height:36px; border-radius:50%; background:#e3f6ea; color:#15803d;
+              display:flex; align-items:center; justify-content:center; font-size:18px;
+              margin:0 auto 12px; }
+  .am-warn { width:36px; height:36px; border-radius:50%; background:#fde2e2; color:#dc2626;
+             display:flex; align-items:center; justify-content:center; font-size:18px;
+             margin:0 auto 12px; }
+  .am-center h5 { font-size:15px; font-weight:700; margin:0 0 6px; }
+  .am-center p { font-size:12px; color:#6b7280; margin:0 0 16px; }
+  .am-wide { width:100%; background:#fff; border:1px solid #d1d5db; border-radius:8px;
+             padding:8px; font-size:13px; font-weight:600; }
+  .am-wide:hover { background:#f3f4f6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+  <form method="get" class="ar-search flex-grow-1 mb-0" id="searchForm">
+    <span class="ico">&#128269;</span>
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by recipient name">
+  </form>
+  <button type="button" class="btn btn-crimson text-nowrap" id="btnAdd">+ Add Recipient</button>
+</div>
+
+<div class="ar-card">
+  <div class="table-responsive">
+    <table class="table ar-table">
+      <thead>
+        <tr><th>Name</th><th>Mobile Number</th><th>Department</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for r in recipients %}
+        <tr>
+          <td class="ar-name">{{ r.name }}</td>
+          <td class="ar-muted">{{ r.mobile_number }}</td>
+          <td>{{ r.department }}</td>
+          <td class="text-nowrap">
+            <button type="button" class="btn-act btn-edit"
+                    data-action="{% url 'alert_recipient_edit' r.pk %}"
+                    data-name="{{ r.name }}"
+                    data-mobile_number="{{ r.mobile_number }}"
+                    data-department="{{ r.department_id }}">Edit</button>
+            <button type="button" class="btn-act btn-del"
+                    data-action="{% url 'alert_recipient_delete' r.pk %}"
+                    data-name="{{ r.name }}">Delete</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-4">No recipients found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add / Edit modal -->
+<div class="am-backdrop {% if modal_title %}open{% endif %}" id="recipientModal">
+  <div class="am-box">
+    <div class="am-head">
+      <h5 class="am-title" id="amTitle">{{ modal_title|default:"Add Recipient" }}</h5>
+      <p class="am-sub" id="amSub">
+        {% if modal_title == "Edit Recipient Information" %}Edit information of NCR alert recipients{% else %}Add a person to receive NCR alerts{% endif %}
+      </p>
+      <button type="button" class="am-close" data-close="recipientModal" aria-label="Close">&times;</button>
+    </div>
+    <form method="post" id="amForm" action="{{ modal_action|default:'' }}">
+      {% csrf_token %}
+      <div class="am-body">
+        <div class="am-field {% if form.name.errors %}has-error{% endif %}">
+          <label>Name <span class="req">*</span></label>
+          {{ form.name }}
+          {% for e in form.name.errors %}<div class="am-err">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="am-field {% if form.mobile_number.errors %}has-error{% endif %}">
+          <label>Mobile Number <span class="req">*</span></label>
+          {{ form.mobile_number }}
+          {% for e in form.mobile_number.errors %}<div class="am-err">{{ e }}</div>
+          {% empty %}<div class="am-hint">Enter an 11-digit mobile number</div>{% endfor %}
+        </div>
+
+        <div class="am-field {% if form.department.errors %}has-error{% endif %}">
+          <label>Department <span class="req">*</span></label>
+          {{ form.department }}
+          {% for e in form.department.errors %}<div class="am-err">{{ e }}</div>{% endfor %}
+        </div>
+
+        {% for e in form.non_field_errors %}<div class="am-err">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="am-foot">
+        <button type="button" class="btn btn-sm btn-soft px-3" data-close="recipientModal">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-crimson px-3" id="amSubmit">
+          {% if modal_title == "Edit Recipient Information" %}Save{% else %}Add Recipient{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Success modal -->
+<div class="am-backdrop {% if success %}open{% endif %}" id="successModal">
+  <div class="am-box" style="max-width:340px">
+    <div class="am-center">
+      <div class="am-check">&#10003;</div>
+      <h5>{{ success.title }}</h5>
+      <p>{{ success.text }}</p>
+      <button type="button" class="am-wide" data-close="successModal">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="am-backdrop" id="confirmModal">
+  <div class="am-box" style="max-width:340px">
+    <div class="am-center">
+      <div class="am-warn">&#9888;</div>
+      <h5>Remove this recipient?</h5>
+      <p id="confirmText"></p>
+      <form method="post" id="deleteForm" action="">
+        {% csrf_token %}
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-soft flex-fill" data-close="confirmModal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-danger-solid flex-fill">Remove</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const modal = $("recipientModal");
+  const form = $("amForm");
+  const addUrl = "{% url 'alert_recipient_add' %}";
+  const fieldNames = ["name", "mobile_number", "department"];
+
+  const openM = (el) => el.classList.add("open");
+  const closeM = (el) => el.classList.remove("open");
+  const field = (n) => form.querySelector('[name="' + n + '"]');
+
+  function clearErrors() {
+    form.querySelectorAll(".am-err").forEach(e => e.remove());
+    form.querySelectorAll(".has-error").forEach(e => e.classList.remove("has-error"));
+  }
+
+  function setMode(isEdit) {
+    $("amTitle").textContent = isEdit ? "Edit Recipient Information" : "Add Recipient";
+    $("amSub").textContent = isEdit
+      ? "Edit information of NCR alert recipients"
+      : "Add a person to receive NCR alerts";
+    $("amSubmit").textContent = isEdit ? "Save" : "Add Recipient";
+  }
+
+  $("btnAdd").addEventListener("click", () => {
+    clearErrors();
+    setMode(false);
+    form.action = addUrl;
+    fieldNames.forEach(n => { const el = field(n); if (el) el.value = ""; });
+    openM(modal);
+  });
+
+  document.querySelectorAll(".btn-edit").forEach(btn => {
+    btn.addEventListener("click", () => {
+      clearErrors();
+      setMode(true);
+      form.action = btn.dataset.action;
+      fieldNames.forEach(n => { const el = field(n); if (el) el.value = btn.dataset[n] || ""; });
+      openM(modal);
+    });
+  });
+
+  document.querySelectorAll(".btn-del").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("confirmText").textContent = btn.dataset.name + " will no longer receive NCR alerts.";
+      $("deleteForm").action = btn.dataset.action;
+      openM($("confirmModal"));
+    });
+  });
+
+  document.querySelectorAll("[data-close]").forEach(b =>
+    b.addEventListener("click", () => closeM($(b.dataset.close))));
+  document.querySelectorAll(".am-backdrop").forEach(bd =>
+    bd.addEventListener("mousedown", (e) => { if (e.target === bd) closeM(bd); }));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") document.querySelectorAll(".am-backdrop.open").forEach(closeM);
+  });
+})();
+</script>
+{% endblock %}

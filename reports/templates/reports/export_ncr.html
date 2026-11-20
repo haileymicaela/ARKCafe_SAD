@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=export-v5">
+<div class="export-page">
+  <div class="export-tabs" role="tablist" aria-label="Export format">
+    <button type="button" class="export-tab is-active" id="tab-excel" role="tab" aria-selected="true">NCR List (Excel)</button>
+    <button type="button" class="export-tab" id="tab-pdf" role="tab" aria-selected="false">Single NCR (PDF)</button>
+  </div>
+
+  <form method="post" action="{% url 'staff_export' %}" id="exportForm" class="export-form">
+    {% csrf_token %}
+    <input type="hidden" name="export_type" id="export_type" value="excel">
+    <div class="export-layout">
+      <section class="export-card export-controls" id="section-excel" aria-labelledby="excel-heading">
+        <h2 id="excel-heading">Export filters</h2>
+        <div class="export-field-grid">
+          <label class="export-field"><span>Project <b>*</b></span><select name="project" id="filter-project"><option value="">All projects</option>{% for project in projects %}<option value="{{ project.pk }}">{{ project.project_name }}</option>{% endfor %}</select></label>
+          <label class="export-field"><span>Package No.</span><input name="package_no" id="filter-package" placeholder="e.g. PKG-114"></label>
+          <label class="export-field"><span>Cause <b>*</b></span><select name="cause" id="filter-cause"><option value="">All causes</option>{% for value,label in cause_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+          <label class="export-field"><span>Status <b>*</b></span><select name="status" id="filter-status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+          <label class="export-field"><span>Date raised - from</span><input type="date" name="start_date" id="filter-start"></label>
+          <label class="export-field"><span>Date raised - to</span><input type="date" name="end_date" id="filter-end"></label>
+        </div>
+        <fieldset class="export-columns"><legend>Columns to include <b>*</b></legend><div class="export-column-grid">
+          {% for value,label in column_options.items %}<label class="export-check"><input type="checkbox" name="columns" value="{{ value }}"><span>{{ label }}</span></label>{% endfor %}
+        </div></fieldset>
+      </section>
+
+      <section class="export-card export-controls d-none" id="section-pdf" aria-labelledby="pdf-heading">
+        <h2 id="pdf-heading">Select NCR</h2>
+        <label class="export-field"><span>NCR <b>*</b></span><select name="single_ncr" id="single-ncr"><option value="">Select an NCR...</option>{% for ncr in ncrs %}<option value="{{ ncr.pk }}" data-reference="{{ ncr.reference_no }}" data-attachments="{{ ncr.attachments.count }}">{{ ncr.reference_no }} - {{ ncr.subject|truncatechars:58 }}</option>{% endfor %}</select></label>
+        <fieldset class="export-columns export-pdf-options"><legend>Include in PDF</legend>
+          <label class="export-check export-check-wide"><input type="checkbox" name="include_attachments"><span><strong>Photos and attachments</strong><small id="attachment-count">Files from this NCR</small></span></label>
+          <label class="export-check export-check-wide"><input type="checkbox" name="include_history"><span><strong>Status history</strong><small>Every status change with date and user</small></span></label>
+          <label class="export-check export-check-wide"><input type="checkbox" name="include_resolution"><span><strong>Resolution details</strong><small>Resolution type, note, and date</small></span></label>
+        </fieldset>
+      </section>
+
+      <aside class="export-card export-summary-card" aria-live="polite">
+        <h2>Export Summary</h2>
+        <dl class="export-summary-list">
+          <div><dt>Format</dt><dd id="summary-format">Excel (.xlsx)</dd></div>
+          <div><dt id="summary-records-label">Records</dt><dd id="summary-records">{{ total_records }} NCRs</dd></div>
+          <div id="summary-filter-row"><dt>Filters</dt><dd id="summary-filters">All records</dd></div>
+          <div><dt>File name</dt><dd id="summary-filename">NCR-List_{{ today|date:'Y-m-d' }}.xlsx</dd></div>
+        </dl>
+        <p class="export-empty d-none" id="export-empty">No NCRs match these filters. Try a wider range.</p>
+        <p class="export-error d-none" id="export-error" role="alert"></p>
+        <button type="submit" class="export-primary" id="btn-submit" disabled>Export to Excel</button>
+        <p class="export-pdf-note d-none" id="pdf-note">Print it or upload it manually to Procore or Reconnects.</p>
+      </aside>
+    </div>
+  </form>
+</div>
+
+<div class="export-modal d-none" id="export-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="export-modal-card"><div class="export-success-icon">✓</div><h2 id="modal-title">Export Ready</h2><p>Your file was generated from the current filters.</p>
+    <div class="export-file-info"><strong id="modal-filename"></strong><small id="modal-details"></small></div>
+    <div class="export-modal-actions"><button type="button" class="export-secondary" id="modal-close">Close</button><a class="export-primary" id="modal-download" href="#" download>Download</a></div>
+  </div>
+</div>
+<script src="{% static 'reports/js/export_ncr.js' %}?v=export-v4" defer></script>
+{% endblock %}
