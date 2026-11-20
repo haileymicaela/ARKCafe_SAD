@@ -25,19 +25,15 @@
   <!-- Search & Filter Bar -->
   <form method="get" class="mb-4">
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-      
-      <!-- Filter Button (Triggers Collapse) -->
       <button type="button" class="btn btn-outline-secondary bg-white d-flex align-items-center gap-2 px-3 py-2" data-bs-toggle="collapse" data-bs-target="#filterOptions">
         <i class="bi bi-funnel"></i> Filters
       </button>
       
-      <!-- Search Input (Using new class) -->
       <div class="search-container">
         <i class="bi bi-search position-absolute text-muted"></i>
         <input type="text" name="q" value="{{ filters.q }}" class="form-control py-2 shadow-sm border-0" placeholder="Search by NCR no., subject, or project...">
       </div>
 
-      <!-- Sort Dropdown -->
       <select name="sort" class="form-select py-2 shadow-sm border-0" style="width: auto;">
         <option value="newest">Newest first</option>
         <option value="oldest">Oldest first</option>
@@ -87,8 +83,6 @@
 
   <!-- Main Records Card -->
   <div class="bg-white rounded-3 shadow-sm border-0 overflow-hidden">
-    
-    <!-- List Header -->
     <div class="d-none d-lg-grid ncr-grid-header py-3 px-4 border-bottom text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">
       <div>NCR No.</div>
       <div>Subject</div>
@@ -99,57 +93,49 @@
       <div class="text-end">Days Open</div>
     </div>
 
-    <!-- List Items -->
     <div class="list-group list-group-flush">
       {% for n in page_obj %}
       <div class="list-group-item list-group-item-action py-3 px-4 border-bottom-0 border-bottom">
         <div class="row g-0 align-items-center d-lg-grid ncr-grid-row">
           
-          <!-- NCR No. -->
           <div class="col-12 col-lg-auto mb-2 mb-lg-0">
             <a href="{% url 'ncr_detail' n.pk %}" class="fw-bold text-decoration-none text-crimson" style="font-size: 15px;">
               {{ n.reference_no }}
             </a>
           </div>
           
-          <!-- Subject -->
           <div class="col-12 col-lg-auto mb-2 mb-lg-0 pe-lg-3">
             <div class="fw-semibold text-dark" style="font-size: 14px;">{{ n.subject|truncatechars:60 }}</div>
             <div class="text-muted small mt-1">Package {{ n.package_no|default:"—" }}</div>
           </div>
           
-          <!-- Project -->
           <div class="col-6 col-lg-auto mb-2 mb-lg-0 text-dark" style="font-size: 14px;">
             {{ n.project.project_name }}
           </div>
           
-          <!-- Cause -->
           <div class="col-6 col-lg-auto mb-2 mb-lg-0">
             <span class="badge badge-cause border-0 px-3 py-2 rounded-pill" style="font-size: 13px;">
               {{ n.get_cause_display }}
             </span>
           </div>
           
-          <!-- Status -->
           <div class="col-6 col-lg-auto mb-2 mb-lg-0">
             <span class="badge badge-{{ n.status }} border-0 px-3 py-2 rounded-pill" style="font-size: 13px;">
               <span class="me-1" style="font-size: 8px;">●</span> {{ n.get_status_display }}
             </span>
           </div>
           
-          <!-- Date Raised -->
           <div class="col-6 col-lg-auto mb-2 mb-lg-0 text-muted" style="font-size: 14px;">
             {{ n.issued_date|date:"M d, Y" }}
           </div>
           
-          <!-- Days Open & Chevron -->
+          <!-- Days Open & Chevron (Inayos ang error) -->
           <div class="col-12 col-lg-auto text-end d-flex justify-content-between justify-content-lg-end align-items-center gap-3">
             {% if n.status == 'resolved' %}
               <span class="text-muted">—</span>
             {% else %}
               <span class="text-muted" style="font-size: 14px;">
-                {% now "Y-m-d" as today_str %}
-                {{ n.issued_date|timesince:today_str|slice:":-7" }}
+                {{ n.issued_date|timesince }} ago
               </span>
             {% endif %}
             <a href="{% url 'ncr_detail' n.pk %}" class="text-muted"><i class="bi bi-chevron-right" style="font-size: 12px;"></i></a>
@@ -164,7 +150,6 @@
       {% endfor %}
     </div>
     
-    <!-- Footer with Pagination -->
     <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white">
       <div class="text-muted" style="font-size: 14px;">
         Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs

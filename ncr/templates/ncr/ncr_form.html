@@ -2,7 +2,7 @@
 {% block extra_head %}{% include "ncr/_head.html" %}{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 900px;">
+<div class="container-fluid py-4 px-2" style="max-width: 1000px; margin: 0 auto;">
   
   <!-- Header Section -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -87,14 +87,13 @@
         </div>
       </div>
 
-      <!-- Attachments Section (Full Width Below) -->
+      <!-- Attachments Section -->
       <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <label class="form-label fw-semibold text-dark mb-0">Attachments</label>
           <span class="text-muted small">Optional</span>
         </div>
         
-        <!-- Drag & Drop Area -->
         <div id="drop-area" class="drop-zone text-center p-4 mb-3" style="border-color: #cbd5e1; background-color: #f8fafc;">
           <div class="mb-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#9ca3af" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
@@ -105,13 +104,11 @@
           <p class="mb-1 fw-semibold text-dark">Drag & drop photos or documents, or <span class="text-crimson fw-bold" style="cursor:pointer; text-decoration: underline;" id="browse-btn">browse</span></p>
           <p class="text-muted mb-0" style="font-size: 13px;">JPG, PNG or PDF · up to 5 MB each</p>
           
-          <!-- Hidden default file input -->
           <div class="d-none">
             {{ form.attachments }}
           </div>
         </div>
 
-        <!-- File List -->
         <div id="file-list" class="d-flex flex-column gap-2"></div>
         
         {% for error in form.attachments.errors %}
