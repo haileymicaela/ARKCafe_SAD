@@ -4,93 +4,173 @@
 {% block content %}
 {% include "ncr/_messages.html" %}
 
-<form method="get" class="ncr-card p-3 mb-3">
-  <div class="row g-2 align-items-end">
-    <div class="col-12 col-md-4">
-      <label class="form-label small text-muted mb-1">Search</label>
-      <input type="text" name="q" value="{{ filters.q }}" class="form-control" placeholder="Reference no., subject, package, project">
+<div class="container-fluid py-4 px-4">
+  
+  <!-- Top Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="fw-bold mb-1" style="color: #1a1a1a; font-size: 28px;">NCR Records</h2>
+      <p class="text-muted mb-0" style="font-size: 14px;">View, search, and filter all non-conformance reports</p>
     </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Status</label>
-      <select name="status" class="form-select">
-        <option value="">All</option>
-        {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Cause</label>
-      <select name="cause" class="form-select">
-        <option value="">All</option>
-        {% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Project</label>
-      <select name="project" class="form-select">
-        <option value="">All</option>
-        {% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.project_code }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Department</label>
-      <select name="department" class="form-select">
-        <option value="">All</option>
-        {% for d in departments %}<option value="{{ d.pk }}" {% if filters.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.department_name }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-3">
-      <label class="form-label small text-muted mb-1">Issued from</label>
-      <input type="date" name="date_from" value="{{ filters.date_from }}" class="form-control">
-    </div>
-    <div class="col-6 col-md-3">
-      <label class="form-label small text-muted mb-1">Issued to</label>
-      <input type="date" name="date_to" value="{{ filters.date_to }}" class="form-control">
-    </div>
-    <div class="col-12 col-md-3 d-flex gap-2">
-      <button class="btn btn-crimson flex-fill" type="submit">Filter</button>
-      <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary">Reset</a>
+    <div class="d-flex gap-2">
+      <a href="#" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-clock-history"></i> Audit History
+      </a>
+      <a href="{% url 'staff_create_ncr' %}" class="btn btn-crimson d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-plus-lg"></i> Create NCR
+      </a>
     </div>
   </div>
-</form>
 
-<div class="ncr-card">
-  <div class="card-title-bar d-flex justify-content-between align-items-center">
-    <span>NCR Records <span class="text-muted fw-normal">({{ page_obj.paginator.count }})</span></span>
-    <a href="{% url 'staff_create_ncr' %}" class="btn btn-sm btn-crimson"><i class="bi bi-plus-lg me-1"></i>Create NCR</a>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-hover ncr-table">
-      <thead>
-        <tr><th>Reference No.</th><th>Subject</th><th>Project</th><th>Department</th><th>Cause</th><th>Issued</th><th>Required</th><th>Status</th><th class="text-end">Actions</th></tr>
-      </thead>
-      <tbody>
+  <!-- Search & Filter Bar -->
+  <form method="get" class="mb-4">
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+      
+      <!-- Filter Button (Triggers Collapse) -->
+      <button type="button" class="btn btn-outline-secondary bg-white d-flex align-items-center gap-2 px-3 py-2" data-bs-toggle="collapse" data-bs-target="#filterOptions">
+        <i class="bi bi-funnel"></i> Filters
+      </button>
+      
+      <!-- Search Input (Using new class) -->
+      <div class="search-container">
+        <i class="bi bi-search position-absolute text-muted"></i>
+        <input type="text" name="q" value="{{ filters.q }}" class="form-control py-2 shadow-sm border-0" placeholder="Search by NCR no., subject, or project...">
+      </div>
+
+      <!-- Sort Dropdown -->
+      <select name="sort" class="form-select py-2 shadow-sm border-0" style="width: auto;">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+      </select>
+    </div>
+
+    <!-- Collapsible Filter Options -->
+    <div class="collapse" id="filterOptions">
+      <div class="bg-white p-3 rounded shadow-sm border mb-3">
+        <div class="row g-3">
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted mb-1">Status</label>
+            <select name="status" class="form-select">
+              <option value="">All Statuses</option>
+              {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted mb-1">Cause</label>
+            <select name="cause" class="form-select">
+              <option value="">All Causes</option>
+              {% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted mb-1">Project</label>
+            <select name="project" class="form-select">
+              <option value="">All Projects</option>
+              {% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.project_code }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label small text-muted mb-1">Department</label>
+            <select name="department" class="form-select">
+              <option value="">All Departments</option>
+              {% for d in departments %}<option value="{{ d.pk }}" {% if filters.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.department_name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-crimson px-4" type="submit">Apply Filters</button>
+            <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary">Reset</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Main Records Card -->
+  <div class="bg-white rounded-3 shadow-sm border-0 overflow-hidden">
+    
+    <!-- List Header -->
+    <div class="d-none d-lg-grid ncr-grid-header py-3 px-4 border-bottom text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">
+      <div>NCR No.</div>
+      <div>Subject</div>
+      <div>Project</div>
+      <div>Cause</div>
+      <div>Status</div>
+      <div>Date Raised</div>
+      <div class="text-end">Days Open</div>
+    </div>
+
+    <!-- List Items -->
+    <div class="list-group list-group-flush">
       {% for n in page_obj %}
-        <tr>
-          <td class="fw-semibold text-nowrap"><a href="{% url 'ncr_detail' n.pk %}" class="text-decoration-none" style="color: var(--crimson-dark)">{{ n.reference_no }}</a></td>
-          <td>{{ n.subject|truncatechars:40 }}</td>
-          <td class="text-nowrap">{{ n.project.project_code }}</td>
-          <td>{{ n.department.department_name }}</td>
-          <td><span class="badge badge-cause">{{ n.get_cause_display }}</span></td>
-          <td class="text-nowrap">{{ n.issued_date|date:"M d, Y"|default:"—" }}</td>
-          <td class="text-nowrap">
-            {% if n.required_date %}
-              {% if n.required_date < today and n.status in open_statuses %}
-                <span class="text-danger fw-semibold" title="Overdue">{{ n.required_date|date:"M d, Y" }} <i class="bi bi-exclamation-circle"></i></span>
-              {% else %}{{ n.required_date|date:"M d, Y" }}{% endif %}
-            {% else %}—{% endif %}
-          </td>
-          <td><span class="badge badge-{{ n.status }}">{{ n.get_status_display }}</span></td>
-          <td class="text-end text-nowrap">
-            <a href="{% url 'ncr_detail' n.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
-            <a href="{% url 'ncr_edit' n.pk %}" class="btn btn-sm btn-outline-crimson">Edit</a>
-          </td>
-        </tr>
+      <div class="list-group-item list-group-item-action py-3 px-4 border-bottom-0 border-bottom">
+        <div class="row g-0 align-items-center d-lg-grid ncr-grid-row">
+          
+          <!-- NCR No. -->
+          <div class="col-12 col-lg-auto mb-2 mb-lg-0">
+            <a href="{% url 'ncr_detail' n.pk %}" class="fw-bold text-decoration-none text-crimson" style="font-size: 15px;">
+              {{ n.reference_no }}
+            </a>
+          </div>
+          
+          <!-- Subject -->
+          <div class="col-12 col-lg-auto mb-2 mb-lg-0 pe-lg-3">
+            <div class="fw-semibold text-dark" style="font-size: 14px;">{{ n.subject|truncatechars:60 }}</div>
+            <div class="text-muted small mt-1">Package {{ n.package_no|default:"—" }}</div>
+          </div>
+          
+          <!-- Project -->
+          <div class="col-6 col-lg-auto mb-2 mb-lg-0 text-dark" style="font-size: 14px;">
+            {{ n.project.project_name }}
+          </div>
+          
+          <!-- Cause -->
+          <div class="col-6 col-lg-auto mb-2 mb-lg-0">
+            <span class="badge badge-cause border-0 px-3 py-2 rounded-pill" style="font-size: 13px;">
+              {{ n.get_cause_display }}
+            </span>
+          </div>
+          
+          <!-- Status -->
+          <div class="col-6 col-lg-auto mb-2 mb-lg-0">
+            <span class="badge badge-{{ n.status }} border-0 px-3 py-2 rounded-pill" style="font-size: 13px;">
+              <span class="me-1" style="font-size: 8px;">●</span> {{ n.get_status_display }}
+            </span>
+          </div>
+          
+          <!-- Date Raised -->
+          <div class="col-6 col-lg-auto mb-2 mb-lg-0 text-muted" style="font-size: 14px;">
+            {{ n.issued_date|date:"M d, Y" }}
+          </div>
+          
+          <!-- Days Open & Chevron -->
+          <div class="col-12 col-lg-auto text-end d-flex justify-content-between justify-content-lg-end align-items-center gap-3">
+            {% if n.status == 'resolved' %}
+              <span class="text-muted">—</span>
+            {% else %}
+              <span class="text-muted" style="font-size: 14px;">
+                {% now "Y-m-d" as today_str %}
+                {{ n.issued_date|timesince:today_str|slice:":-7" }}
+              </span>
+            {% endif %}
+            <a href="{% url 'ncr_detail' n.pk %}" class="text-muted"><i class="bi bi-chevron-right" style="font-size: 12px;"></i></a>
+          </div>
+        </div>
+      </div>
       {% empty %}
-        <tr><td colspan="9" class="text-center text-muted py-5">No NCR records found.</td></tr>
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 mb-2 d-block text-secondary"></i>
+        No NCR records found.
+      </div>
       {% endfor %}
-      </tbody>
-    </table>
+    </div>
+    
+    <!-- Footer with Pagination -->
+    <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white">
+      <div class="text-muted" style="font-size: 14px;">
+        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs
+      </div>
+      {% include "ncr/_pagination.html" %}
+    </div>
   </div>
-  {% include "ncr/_pagination.html" %}
 </div>
 {% endblock %}

@@ -2,59 +2,130 @@
 {% block extra_head %}{% include "ncr/_head.html" %}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4>{% if ncr %}Edit NCR{% else %}Create NCR{% endif %}</h4>
-  <a href="{% url 'staff_records' %}" class="btn btn-sm btn-outline-secondary">Back</a>
-</div>
-
-<form method="post" enctype="multipart/form-data" class="ncr-card p-4">
-  {% csrf_token %}
-  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+<div class="container py-4" style="max-width: 900px;">
   
-  <!-- Loop through other fields -->
-  {% for field in form %}
-    {% if field.name != 'attachments' %}
-      <div class="mb-3">
-        <label class="form-label fw-semibold">{{ field.label }}</label>
-        {{ field }}
-        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-      </div>
-    {% endif %}
-  {% endfor %}
-
-  <!-- Custom Attachments UI -->
-  <div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <label class="form-label fw-semibold mb-0">Attachments</label>
-      <span class="text-muted small">Optional</span>
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1" style="color: #1a1a1a; font-size: 28px;">
+        {% if ncr %}Edit NCR{% else %}Create NCR{% endif %}
+      </h2>
+      <p class="text-muted mb-0" style="font-size: 14px;">
+        {% if ncr %}Update the details of this non-conformance report{% else %}Fill in the details to create a new non-conformance report{% endif %}
+      </p>
     </div>
-    
-    <!-- Drag & Drop Area -->
-    <div id="drop-area" class="drop-zone text-center p-3 mb-3">
-      <div class="mb-1">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-upload text-secondary" viewBox="0 0 16 16">
-          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-          <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-        </svg>
-      </div>
-      <p class="mb-1 small fw-semibold">Drag & drop photos or documents, or <span class="text-crimson text-decoration-underline" style="cursor:pointer;" id="browse-btn">browse</span></p>
-      <p class="text-muted mb-0" style="font-size: 12px;">JPG, PNG or PDF · up to 5 MB each</p>
-      
-      <!-- Hidden default file input -->
-      <div class="d-none">
-        {{ form.attachments }}
-      </div>
-    </div>
-
-    <!-- File List -->
-    <div id="file-list" class="d-flex flex-column gap-2"></div>
-    
-    {% for error in form.attachments.errors %}<div class="text-danger small mt-2">{{ error }}</div>{% endfor %}
+    <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2">
+      <i class="bi bi-arrow-left"></i> Back to Records
+    </a>
   </div>
-  
-  <button type="submit" class="btn btn-crimson w-100">Save NCR</button>
-</form>
+
+  <!-- Main Form Card -->
+  <div class="bg-white rounded-4 shadow-sm border p-4 p-md-5">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+      
+      <!-- Fields Grid (2 Columns) -->
+      <div class="row g-4 mb-4">
+        <!-- Project -->
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark">{{ form.project.label }}</label>
+          {{ form.project }}
+          {% for error in form.project.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Department -->
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark">{{ form.department.label }}</label>
+          {{ form.department }}
+          {% for error in form.department.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Package No -->
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark">{{ form.package_no.label }}</label>
+          {{ form.package_no }}
+          {% for error in form.package_no.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Cause -->
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark">{{ form.cause.label }}</label>
+          {{ form.cause }}
+          {% for error in form.cause.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Subject (Full Width) -->
+        <div class="col-12">
+          <label class="form-label fw-semibold text-dark">{{ form.subject.label }}</label>
+          {{ form.subject }}
+          {% for error in form.subject.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Issued Date -->
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark">{{ form.issued_date.label }}</label>
+          {{ form.issued_date }}
+          {% for error in form.issued_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Required Date -->
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark">{{ form.required_date.label }}</label>
+          {{ form.required_date }}
+          {% for error in form.required_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <!-- Description (Full Width) -->
+        <div class="col-12">
+          <label class="form-label fw-semibold text-dark">{{ form.description.label }}</label>
+          {{ form.description }}
+          {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <!-- Attachments Section (Full Width Below) -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label fw-semibold text-dark mb-0">Attachments</label>
+          <span class="text-muted small">Optional</span>
+        </div>
+        
+        <!-- Drag & Drop Area -->
+        <div id="drop-area" class="drop-zone text-center p-4 mb-3" style="border-color: #cbd5e1; background-color: #f8fafc;">
+          <div class="mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#9ca3af" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2z"/>
+              <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.636-1.136 1.523-1.136 2.093a.5.5 0 0 1-.385.487C2.297 6.915 1 8.228 1 9.318 1 10.864 2.297 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+            </svg>
+          </div>
+          <p class="mb-1 fw-semibold text-dark">Drag & drop photos or documents, or <span class="text-crimson fw-bold" style="cursor:pointer; text-decoration: underline;" id="browse-btn">browse</span></p>
+          <p class="text-muted mb-0" style="font-size: 13px;">JPG, PNG or PDF · up to 5 MB each</p>
+          
+          <!-- Hidden default file input -->
+          <div class="d-none">
+            {{ form.attachments }}
+          </div>
+        </div>
+
+        <!-- File List -->
+        <div id="file-list" class="d-flex flex-column gap-2"></div>
+        
+        {% for error in form.attachments.errors %}
+          <div class="text-danger small mt-2">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Submit Button -->
+      <div class="d-flex justify-content-end mt-4 pt-4 border-top">
+        <button type="submit" class="btn btn-crimson px-5 py-2 fs-6">Save NCR</button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -65,13 +136,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const browseBtn = document.getElementById('browse-btn');
   const fileList = document.getElementById('file-list');
 
-  // Array para panatilihin ang lahat ng files
   let allFiles = [];
 
-  // Trigger file input when clicking browse
   browseBtn.addEventListener('click', () => fileInput.click());
 
-  // Handle Drag & Drop
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false);
   });
@@ -89,32 +157,23 @@ document.addEventListener('DOMContentLoaded', function() {
     dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
   });
 
-  // Handle file drop
   dropArea.addEventListener('drop', (e) => {
     const dt = e.dataTransfer;
     addFiles(dt.files);
   });
 
-  // Handle file input change (browse)
   fileInput.addEventListener('change', function() {
     addFiles(this.files);
   });
 
-  // Function to add files (append mode using array)
   function addFiles(newFiles) {
-    // 1. I-convert ang FileList sa Array at idagdag sa allFiles
     for (let i = 0; i < newFiles.length; i++) {
       allFiles.push(newFiles[i]);
     }
-    
-    // 2. I-update ang fileInput.files gamit ang DataTransfer
     updateFileInput();
-    
-    // 3. I-render ang listahan
     updateFileList();
   }
 
-  // Function to update fileInput.files based on allFiles array
   function updateFileInput() {
     const dt = new DataTransfer();
     for (let i = 0; i < allFiles.length; i++) {
@@ -123,41 +182,33 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.files = dt.files;
   }
 
-  // Render File List
   function updateFileList() {
     fileList.innerHTML = '';
-    
     for (let i = 0; i < allFiles.length; i++) {
       const file = allFiles[i];
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
       
       const item = document.createElement('div');
-      item.className = 'd-flex justify-content-between align-items-center p-2 border rounded bg-white';
+      item.className = 'd-flex justify-content-between align-items-center p-3 border rounded-3 bg-white shadow-sm';
       item.innerHTML = `
-        <div class="d-flex align-items-center gap-2">
-          <div class="bg-light p-2 rounded"><i class="bi bi-file-earmark-image text-secondary"></i></div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-light p-2 rounded text-crimson"><i class="bi bi-file-earmark-text fs-5"></i></div>
           <div>
-            <div class="fw-semibold small">${file.name}</div>
-            <div class="text-muted small">${sizeMB} MB</div>
+            <div class="fw-semibold text-dark" style="font-size: 14px;">${file.name}</div>
+            <div class="text-muted" style="font-size: 12px;">${sizeMB} MB</div>
           </div>
         </div>
-        <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="removeFile(${i})">
-          <i class="bi bi-x-lg"></i>
+        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none fw-semibold p-0" onclick="removeFile(${i})">
+          Remove
         </button>
       `;
       fileList.appendChild(item);
     }
   }
 
-  // Remove file logic
   window.removeFile = function(index) {
-    // 1. Tanggalin ang file sa allFiles array
     allFiles.splice(index, 1);
-    
-    // 2. I-update ang fileInput.files
     updateFileInput();
-    
-    // 3. I-render muli
     updateFileList();
   };
 });

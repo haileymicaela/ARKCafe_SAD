@@ -1,33 +1,107 @@
 /* NCR module styles - reuses the CSS variables from static/css/sidebar.css */
-.btn-crimson { background: var(--crimson-dark); border-color: var(--crimson-dark); color: #fff; }
-.btn-crimson:hover, .btn-crimson:focus { background: var(--crimson-light); border-color: var(--crimson-light); color: #fff; }
-.btn-outline-crimson { color: var(--crimson-dark); border-color: var(--crimson-dark); background: transparent; }
-.btn-outline-crimson:hover { background: var(--crimson-dark); color: #fff; }
-.ncr-card { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; }
-.ncr-card .card-title-bar { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: 600; }
-.ncr-table { margin-bottom: 0; font-size: 14px; }
-.ncr-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-.ncr-table td { vertical-align: middle; }
-.form-control:focus, .form-select:focus { border-color: var(--crimson-light); box-shadow: 0 0 0 .2rem rgba(104, 22, 29, .15); }
-.badge-open { background: #FEF3C7; color: #92400E; }
-.badge-in_progress { background: #DBEAFE; color: #1E40AF; }
-.badge-resolved { background: #D1FAE5; color: #065F46; }
-.badge-cause { background: #E5E7EB; color: #374151; }
-.pagination .page-link { color: var(--crimson-dark); }
-.detail-label { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); font-weight: 600; }
-.history-item { border-left: 3px solid var(--border-color); padding-left: 14px; margin-bottom: 16px; }
-
-/* --- NEW STYLES FOR DRAG & DROP --- */
-.text-crimson { color: var(--crimson-dark) !important; }
-.drop-zone {
-  border: 2px dashed #dee2e6;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  transition: all 0.2s ease;
-  padding: 24px; /* Sinigurado natin na sakto lang ang padding */
-  cursor: pointer; /* Nagpapakita ng kamay kapag hinover */
+:root {
+  --crimson-dark: #7a1e1e;
+  --crimson-light: #9e2828;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
 }
-.drop-zone.dragover {
-  border-color: var(--crimson-dark);
-  background-color: #fdf2f2;
+
+/* Buttons */
+.btn-crimson { background: var(--crimson-dark); border-color: var(--crimson-dark); color: #fff; border-radius: 8px; font-weight: 500;}
+.btn-crimson:hover, .btn-crimson:focus { background: var(--crimson-light); border-color: var(--crimson-light); color: #fff; }
+.btn-outline-secondary { color: #374151; border-color: #d1d5db; border-radius: 8px; }
+.btn-outline-secondary:hover { background-color: #f3f4f6; color: #111827; border-color: #9ca3af; }
+.text-crimson { color: var(--crimson-dark) !important; }
+
+/* Grid Layout for Records */
+@media (min-width: 992px) {
+  .ncr-grid-header, .ncr-grid-row {
+    display: grid;
+    grid-template-columns: 1.2fr 3.5fr 1.5fr 1.2fr 1.2fr 1.2fr 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+}
+
+/* Badges */
+.badge-cause { background-color: #f3f4f6; color: #4b5563; font-weight: 500; }
+.badge-open { background-color: #fef2f2; color: #ef4444; font-weight: 500; }
+.badge-in_progress { background-color: #fffbeb; color: #d97706; font-weight: 500; }
+.badge-resolved { background-color: #f0fdf4; color: #16a34a; font-weight: 500; }
+
+/* Pagination (Circular) */
+.pagination .page-link {
+  color: var(--crimson-dark);
+  border: 1px solid #e5e7eb;
+  border-radius: 50% !important;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+.pagination .page-item.active .page-link { background-color: var(--crimson-dark); border-color: var(--crimson-dark); color: #fff; }
+.pagination .page-item.disabled .page-link { color: #9ca3af; background-color: transparent; }
+
+/* Form Controls */
+.form-control, .form-select {
+  border-radius: 8px;
+  border-color: #e5e7eb;
+  font-size: 14px;
+  color: #374151;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--crimson-light);
+  box-shadow: 0 0 0 0.2rem rgba(122, 30, 30, 0.15);
+  border: 1px solid var(--crimson-light);
+}
+.form-control::placeholder { color: #9ca3af; }
+
+/* List Item Hover */
+.list-group-item-action:hover { background-color: #f9fafb !important; transition: background-color 0.15s ease-in-out; }
+.list-group-item { border-bottom: 1px solid #f3f4f6; }
+
+/* Other UI Elements */
+.detail-label { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: #6b7280; font-weight: 600; }
+.history-item { border-left: 3px solid #e5e7eb; padding-left: 14px; margin-bottom: 16px; }
+
+/* Drag & Drop */
+.drop-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+  padding: 24px;
+  cursor: pointer;
+}
+.drop-zone.dragover { border-color: var(--crimson-dark); background-color: #fdf2f2; }
+
+/* --- PERFECT SEARCH BAR FIX --- */
+.search-container {
+  position: relative;
+  flex-grow: 1;
+  min-width: 300px;
+}
+
+.search-container .bi-search {
+  position: absolute;
+  left: 18px;
+  /* Flexbox centering trick */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  z-index: 10;
+  pointer-events: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-container .form-control {
+  padding-left: 48px; /* Space for the icon */
+  height: 42px; /* Standardize height */
 }
