@@ -129,13 +129,16 @@
             {{ n.issued_date|date:"M d, Y" }}
           </div>
           
-          <!-- Days Open & Chevron (Inayos ang error) -->
+          <!-- Days Open (Inayos para "days" lang) -->
           <div class="col-12 col-lg-auto text-end d-flex justify-content-between justify-content-lg-end align-items-center gap-3">
             {% if n.status == 'resolved' %}
               <span class="text-muted">—</span>
             {% else %}
               <span class="text-muted" style="font-size: 14px;">
-                {{ n.issued_date|timesince }} ago
+                {% now "Y-m-d" as today_str %}
+                {% with days=n.issued_date|timesince:today_str %}
+                  {{ days|slice:":-7" }}
+                {% endwith %}
               </span>
             {% endif %}
             <a href="{% url 'ncr_detail' n.pk %}" class="text-muted"><i class="bi bi-chevron-right" style="font-size: 12px;"></i></a>

@@ -30,56 +30,48 @@
       
       <!-- Fields Grid (2 Columns) -->
       <div class="row g-4 mb-4">
-        <!-- Project -->
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark">{{ form.project.label }}</label>
           {{ form.project }}
           {% for error in form.project.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Department -->
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark">{{ form.department.label }}</label>
           {{ form.department }}
           {% for error in form.department.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Package No -->
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark">{{ form.package_no.label }}</label>
           {{ form.package_no }}
           {% for error in form.package_no.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Cause -->
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark">{{ form.cause.label }}</label>
           {{ form.cause }}
           {% for error in form.cause.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Subject (Full Width) -->
         <div class="col-12">
           <label class="form-label fw-semibold text-dark">{{ form.subject.label }}</label>
           {{ form.subject }}
           {% for error in form.subject.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Issued Date -->
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark">{{ form.issued_date.label }}</label>
           {{ form.issued_date }}
           {% for error in form.issued_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Required Date -->
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark">{{ form.required_date.label }}</label>
           {{ form.required_date }}
           {% for error in form.required_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
         </div>
 
-        <!-- Description (Full Width) -->
         <div class="col-12">
           <label class="form-label fw-semibold text-dark">{{ form.description.label }}</label>
           {{ form.description }}
