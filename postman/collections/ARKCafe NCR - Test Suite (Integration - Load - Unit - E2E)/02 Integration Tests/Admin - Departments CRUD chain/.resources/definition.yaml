@@ -1,3 +1,0 @@
-$kind: collection
-description: Creates, searches, renames and deletes its own department (unique name per run).
-order: 3000

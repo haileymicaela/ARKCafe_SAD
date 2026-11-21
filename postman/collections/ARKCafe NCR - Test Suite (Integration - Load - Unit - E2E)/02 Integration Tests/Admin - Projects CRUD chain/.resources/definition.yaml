@@ -1,3 +1,0 @@
-$kind: collection
-description: Creates, searches, edits and deletes its own project (unique code per run).
-order: 2000

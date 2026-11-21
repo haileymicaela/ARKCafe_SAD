@@ -346,9 +346,9 @@ sec_authz = [
              "pm.test('Denied with 403 or 302', () =>",
              "  pm.expect([302, 403]).to.include(pm.response.code));",
          ]),
-    item("8. Staff records page loads and exposes project/department IDs", "GET", "/staff-records/",
+    item("8. Staff create form exposes project/department IDs", "GET", "/staff-create/",
          tests=[
-             "pm.test('Records page 200', () => pm.expect(pm.response.code).to.eql(200));",
+             "pm.test('Create form 200', () => pm.expect(pm.response.code).to.eql(200));",
              "const body = pm.response.text();",
              "const pSel = body.match(/name=\"project\"[\\s\\S]*?<\\/select>/);",
              "const pOpt = pSel && pSel[0].match(/<option value=\"(\\d+)\"/);",
