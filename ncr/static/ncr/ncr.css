@@ -11,6 +11,8 @@
 .btn-crimson:hover, .btn-crimson:focus { background: var(--crimson-light); border-color: var(--crimson-light); color: #fff; }
 .btn-outline-secondary { color: #374151; border-color: #d1d5db; border-radius: 8px; }
 .btn-outline-secondary:hover { background-color: #f3f4f6; color: #111827; border-color: #9ca3af; }
+.btn-outline-crimson { color: var(--crimson-dark); border-color: var(--crimson-dark); border-radius: 8px; }
+.btn-outline-crimson:hover { background-color: var(--crimson-dark); color: #fff; }
 .text-crimson { color: var(--crimson-dark) !important; }
 
 /* Grid Layout for Records */
@@ -89,7 +91,6 @@
 .search-container .bi-search {
   position: absolute;
   left: 18px;
-  /* Flexbox centering trick */
   top: 50%;
   transform: translateY(-50%);
   color: #6c757d;
@@ -102,6 +103,6 @@
 }
 
 .search-container .form-control {
-  padding-left: 48px; /* Space for the icon */
-  height: 42px; /* Standardize height */
+  padding-left: 48px;
+  height: 42px;
 }

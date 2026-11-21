@@ -2,18 +2,11 @@
 {% block extra_head %}{% include "ncr/_head.html" %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 px-2" style="max-width: 1000px; margin: 0 auto;">
+<!-- Binago ang padding para umurong pataas -->
+<div class="container-fluid px-2" style="max-width: 1100px; margin: 0 auto; padding-top: 1rem;">
   
-  <!-- Header Section -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="fw-bold mb-1" style="color: #1a1a1a; font-size: 28px;">
-        {% if ncr %}Edit NCR{% else %}Create NCR{% endif %}
-      </h2>
-      <p class="text-muted mb-0" style="font-size: 14px;">
-        {% if ncr %}Update the details of this non-conformance report{% else %}Fill in the details to create a new non-conformance report{% endif %}
-      </p>
-    </div>
+  <!-- Back Button (Inurong pataas) -->
+  <div class="d-flex justify-content-end mb-2">
     <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2">
       <i class="bi bi-arrow-left"></i> Back to Records
     </a>
