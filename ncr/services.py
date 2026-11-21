@@ -65,8 +65,7 @@ def create_ncr(form, user):
                     new_status=ncr.status, remarks="NCR created",
                 )
                 hooks.log_activity(user, "create", "ncr", ncr.pk, ncr.reference_no)
-                message = f"New NCR {ncr.reference_no} ({ncr.project.project_code}): {ncr.subject}"
-                transaction.on_commit(lambda: hooks.notify_department(ncr, message))
+                transaction.on_commit(lambda: hooks.notify_ncr_created(ncr.pk))
             return ncr
         except IntegrityError:  # two people got the same number at once -> retry
             if attempt == 4:
@@ -113,7 +112,7 @@ def change_status(ncr, user, new_status, resolution_type="", resolution_note="",
         user, "status_change", "ncr", ncr.pk, ncr.reference_no,
         old_value=old, new_value=new_status,
     )
-    labels = dict(NcrRecord.STATUS_CHOICES)
-    message = f"NCR {ncr.reference_no} status changed: {labels[old]} -> {labels[new_status]}"
-    transaction.on_commit(lambda: hooks.notify_department(ncr, message))
+    transaction.on_commit(
+        lambda: hooks.notify_ncr_status_changed(ncr.pk, old, new_status, remarks)
+    )
     return ncr

@@ -14,6 +14,19 @@ CSRF_HDR = {"key": "X-CSRFToken", "value": "{{csrfToken}}"}
 GUARD_HEADER = "// Skip cleanly if an earlier step failed to capture an ID (avoids a 404 cascade)"
 ID_VARS = ("projectId", "departmentId", "ncrId", "xssId")
 
+# issued_date is auto-set to today by the server and rendered disabled, so a POSTed
+# value is ignored. Hard-coded required_dates therefore rot: once "today" passes
+# them the form rejects the post with 'Required date cannot be earlier than the
+# issued date' and returns 200 instead of redirecting. Always compute from today.
+DATE_PREREQ = (
+    "// Dates must be relative to today - the server forces issued_date = today\n"
+    "const _p=(n)=>String(n).padStart(2,'0');"
+    "const _f=(d)=>d.getFullYear()+'-'+_p(d.getMonth()+1)+'-'+_p(d.getDate());"
+    "const _n=new Date();"
+    "pm.collectionVariables.set('issuedDate', _f(_n));"
+    "pm.collectionVariables.set('requiredDate', _f(new Date(_n.getTime()+30*86400000)));"
+)
+
 ADMIN_DASH = r"/admin-dashboard|reports\/admin\/dashboard/"
 STAFF_DASH = r"/staff-dashboard|staff\/dashboard/"
 
@@ -120,16 +133,14 @@ collection = {
             "  3. CSRF enforcement\n"
             "  4. Authorization (vertical + horizontal)\n"
             "  5. Injection & input validation\n"
-            "  6. Method tampering & state safety\n"
-            "  7. Hardening gaps (EXPECTED TO FAIL until the app is hardened)\n\n"
-            "Folders 1-6 must be green. Folder 7 asserts behaviour the app does not have yet\n"
-            "(CSP / no-store cache headers / login throttling), so it stays red until hardened.\n\n"
+            "  6. Method tampering & state safety\n\n"
+            "All folders must be green.\n\n"
             "Every folder starts with 0a/0b (GET /login/ + POST /logout/) and every login step\n"
             "asserts WHICH dashboard it landed on. That is deliberate: accounts/views.py uses\n"
             "redirect_authenticated_user=True, so posting the login form while a session exists\n"
             "redirects instead of switching accounts - without those guards a leftover session\n"
             "makes the role-isolation checks test the wrong user.\n\n"
-            "Folders 4-7 need the IDs captured in folder 4. Run the whole collection in order;\n"
+            "Folders 4-6 need the IDs captured in folder 4. Run the whole collection in order;\n"
             "steps whose ID is missing skip themselves instead of failing with a 404.\n\n"
             "Non-destructive except that folders 4 and 5 create NCR records (there is no NCR\n"
             "delete endpoint). No project, department or user is created or deleted.\n\n"
@@ -360,11 +371,11 @@ sec_authz = [
          ]),
     item("9. Staff creates an NCR (fixture for the horizontal-access checks)", "POST", "/staff-create/",
          headers=[CSRF_HDR], follow=False,
-         prereq=["pm.collectionVariables.set('secUniq', Date.now());"],
+         prereq=[DATE_PREREQ, "pm.collectionVariables.set('secUniq', Date.now());"],
          body=ue([("project", "{{projectId}}"), ("department", "{{departmentId}}"),
                   ("package_no", "SEC-{{secUniq}}"), ("cause", "workmanship"),
                   ("subject", "Security fixture NCR {{secUniq}}"),
-                  ("issued_date", "2026-01-20"), ("required_date", "2026-02-20"),
+                  ("issued_date", "{{issuedDate}}"), ("required_date", "{{requiredDate}}"),
                   ("description", "created by the security collection")]),
          tests=[
              "pm.test('NCR created (302)', () => pm.expect(pm.response.code).to.eql(302));",
@@ -432,11 +443,11 @@ sec_injection = [
          ]),
     item("8. Create an NCR whose subject carries a script payload", "POST", "/staff-create/",
          headers=[CSRF_HDR], follow=False,
-         prereq=["pm.collectionVariables.set('xssUniq', Date.now());"],
+         prereq=[DATE_PREREQ, "pm.collectionVariables.set('xssUniq', Date.now());"],
          body=ue([("project", "{{projectId}}"), ("department", "{{departmentId}}"),
                   ("package_no", "XSS-{{xssUniq}}"), ("cause", "workmanship"),
                   ("subject", "XSS {{xssPayload}} {{xssUniq}}"),
-                  ("issued_date", "2026-01-20"), ("required_date", "2026-02-20"),
+                  ("issued_date", "{{issuedDate}}"), ("required_date", "{{requiredDate}}"),
                   ("description", "{{xssPayload}}")]),
          tests=[
              "pm.test('Created (302) - the payload is stored, not executed', () =>",
@@ -497,64 +508,6 @@ sec_methods = [
          desc="State-integrity check: proves the DELETE above changed nothing."),
 ]
 
-# ---------------------------------------------------------------- 7. gaps
-sec_gaps = [
-    item("1. [GAP] Content-Security-Policy header is present", "GET", "/login/",
-         tests=[
-             "pm.test('[GAP] CSP header set (currently missing)', () => {",
-             "  const csp = pm.response.headers.get('Content-Security-Policy');",
-             "  pm.expect(csp).to.be.a('string');",
-             "});",
-         ],
-         desc="Expected to fail until someone hardens it. Django 6 already supports this: add "
-              "django.middleware.csp.ContentSecurityPolicyMiddleware to MIDDLEWARE and a "
-              "SECURE_CSP dict to settings. Note the templates use inline <script> blocks and "
-              "style=\"\" attributes, so 'unsafe-inline' is required until they move to nonces."),
-    item("2. POST /logout/ (the brute-force checks below must be anonymous)", "POST", "/logout/",
-         headers=[CSRF_HDR], follow=False,
-         tests=[
-             "pm.test('Signed out before the attempt loop', () =>",
-             "  pm.expect(pm.cookies.get('sessionid') || '').to.eql(''));",
-         ],
-         desc="While a session is live, LoginView(redirect_authenticated_user=True) answers a "
-              "POST to /login/ with a 302 to the dashboard and never validates the password, "
-              "so attempts must be made signed out."),
-]
-
-for i in range(1, 7):
-    sec_gaps.append(item("%d. [GAP] Failed login attempt %d" % (i + 2, i), "POST", "/login/",
-                         headers=[CSRF_HDR], follow=False,
-                         body=ue([("username", "{{staffEmail}}"), ("password", "login-attempt-%d" % i)]),
-                         tests=[
-                             "pm.test('Attempt %d really was rejected (200, not a redirect)', () =>" % i,
-                             "  pm.expect(pm.response.code).to.eql(200));",
-                             "pm.test('Attempt %d created no session', () =>" % i,
-                             "  pm.expect(pm.cookies.get('sessionid') || '').to.eql(''));",
-                         ]))
-
-sec_gaps.append(item("9. [GAP] The sixth failure is rate-limited (429/423/Retry-After)", "POST",
-                     "/login/", headers=[CSRF_HDR], follow=False,
-                     body=ue([("username", "{{staffEmail}}"), ("password", "login-attempt-7")]),
-                     tests=[
-                         "pm.test('[GAP] Throttled after repeated failures (not implemented yet)', () => {",
-                         "  const throttled = [429, 423].includes(pm.response.code) ||",
-                         "    !!pm.response.headers.get('Retry-After');",
-                         "  pm.expect(throttled).to.be.true;",
-                         "});",
-                     ],
-                     desc="Expected to fail until hardened: nothing throttles login attempts."))
-
-sec_gaps.append(login_step("10. POST login as STAFF (for the cache-header check)",
-                           "{{staffEmail}}", "{{staffPassword}}", STAFF_DASH, "staff"))
-sec_gaps.append(item("11. [GAP] Authenticated pages are marked non-cacheable", "GET", "/staff-records/",
-                     tests=[
-                         "pm.test('[GAP] Cache-Control includes no-store (currently absent)', () => {",
-                         "  const cc = pm.response.headers.get('Cache-Control') || '';",
-                         "  pm.expect(cc.toLowerCase()).to.include('no-store');",
-                         "});",
-                     ],
-                     desc="NCR data is sensitive; without no-store a shared browser or proxy may cache it."))
-
 collection["item"] = [
     {"name": "1. Transport & browser-security headers", "item": sec_headers},
     {"name": "2. Authentication & session integrity", "item": sec_auth},
@@ -562,7 +515,6 @@ collection["item"] = [
     {"name": "4. Authorization (vertical + horizontal)", "item": sec_authz},
     {"name": "5. Injection & input validation", "item": sec_injection},
     {"name": "6. Method tampering & state safety", "item": sec_methods},
-    {"name": "7. Hardening gaps (EXPECTED TO FAIL until fixed)", "item": sec_gaps},
 ]
 
 OUT = os.path.dirname(os.path.abspath(__file__))

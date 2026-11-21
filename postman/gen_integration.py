@@ -19,6 +19,19 @@ def fd(pairs):
 GUARD_HEADER = "// Skip cleanly if an earlier step failed to capture an ID (avoids a 404 cascade)"
 ID_VARS = ("projectId", "departmentId", "ncrId", "ncrRef")
 
+# issued_date is auto-set to today by the server and rendered disabled, so a POSTed
+# value is ignored. Hard-coded required_dates therefore rot: once "today" passes
+# them the form rejects the post with 'Required date cannot be earlier than the
+# issued date' and returns 200 instead of redirecting. Always compute from today.
+DATE_PREREQ = (
+    "// Dates must be relative to today - the server forces issued_date = today\n"
+    "const _p=(n)=>String(n).padStart(2,'0');"
+    "const _f=(d)=>d.getFullYear()+'-'+_p(d.getMonth()+1)+'-'+_p(d.getDate());"
+    "const _n=new Date();"
+    "pm.collectionVariables.set('issuedDate', _f(_n));"
+    "pm.collectionVariables.set('requiredDate', _f(new Date(_n.getTime()+30*86400000)));"
+)
+
 
 def guard_for(path):
     """Pre-request guard for any request whose URL needs a captured ID."""
@@ -279,11 +292,11 @@ int_ncr = [
          ]),
     item("4. POST create NCR - capture new NCR ID from redirect", "POST", "/staff-create/",
          headers=[CSRF_HDR], follow=False,
-         prereq=["pm.collectionVariables.set('uniq', Date.now());"],
+         prereq=[DATE_PREREQ, "pm.collectionVariables.set('uniq', Date.now());"],
          body=ue([("project", "{{projectId}}"), ("department", "{{departmentId}}"),
                   ("package_no", "PKG-{{uniq}}"), ("cause", "material"),
                   ("subject", "Integration NCR {{uniq}}"),
-                  ("issued_date", "2026-01-15"), ("required_date", "2026-02-15"),
+                  ("issued_date", "{{issuedDate}}"), ("required_date", "{{requiredDate}}"),
                   ("description", "Created by the integration suite")]),
          tests=[
              "pm.test('Create NCR redirects (302)', () => pm.expect(pm.response.code).to.eql(302));",
@@ -300,7 +313,7 @@ int_ncr = [
              "// Check the status badge next to THIS NCR's reference, not a substring anywhere on the page",
              "// The flash message repeats the reference before the card; match the title-bar markup instead",
              "pm.test('Status badge is Open', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-open\">\\s*Open/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-open\">[\\s\\S]{0,120}?\\bOpen\\b/));",
          ]),
     item("6. POST resolve without resolution type (invalid, stays open)", "POST", "/staff-records/{{ncrId}}/",
          headers=[CSRF_HDR],
@@ -309,7 +322,7 @@ int_ncr = [
              "pm.test('Invalid status change re-renders form (200)', () => pm.expect(pm.response.code).to.eql(200));",
              "pm.test('Resolution-type error shown', () => pm.expect(pm.response.text()).to.include('Choose how this NCR was resolved'));",
              "pm.test('Status unchanged: badge still Open', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-open\">\\s*Open/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-open\">[\\s\\S]{0,120}?\\bOpen\\b/));",
          ]),
     item("7. POST status: open -> in_progress", "POST", "/staff-records/{{ncrId}}/",
          headers=[CSRF_HDR], follow=False,
@@ -322,7 +335,7 @@ int_ncr = [
     item("8. GET detail - In Progress", "GET", "/staff-records/{{ncrId}}/",
          tests=[
              "pm.test('Status badge is In Progress', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-in_progress\">\\s*In Progress/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-in_progress\">[\\s\\S]{0,120}?\\bIn Progress\\b/));",
          ]),
     item("9. POST resolve (in_progress -> resolved, with type)", "POST", "/staff-records/{{ncrId}}/",
          headers=[CSRF_HDR], follow=False,
@@ -336,7 +349,7 @@ int_ncr = [
     item("10. GET detail - Resolved", "GET", "/staff-records/{{ncrId}}/",
          tests=[
              "pm.test('Status badge is Resolved', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-resolved\">\\s*Resolved/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-resolved\">[\\s\\S]{0,120}?\\bResolved\\b/));",
          ]),
     item("11. POST reopen (resolved -> open)", "POST", "/staff-records/{{ncrId}}/",
          headers=[CSRF_HDR], follow=False,
@@ -349,14 +362,15 @@ int_ncr = [
     item("12. GET detail - back to Open", "GET", "/staff-records/{{ncrId}}/",
          tests=[
              "pm.test('Status badge is back to Open', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-open\">\\s*Open/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-open\">[\\s\\S]{0,120}?\\bOpen\\b/));",
          ]),
     item("13. POST edit NCR (change subject)", "POST", "/staff-records/{{ncrId}}/edit/",
          headers=[CSRF_HDR], follow=False,
+         prereq=[DATE_PREREQ],
          body=ue([("project", "{{projectId}}"), ("department", "{{departmentId}}"),
                   ("package_no", "PKG-{{uniq}}"), ("cause", "material"),
                   ("subject", "Integration NCR {{uniq}} - EDITED"),
-                  ("issued_date", "2026-01-15"), ("required_date", "2026-02-15"),
+                  ("issued_date", "{{issuedDate}}"), ("required_date", "{{requiredDate}}"),
                   ("description", "Edited by the integration suite")]),
          tests=["pm.test('Edit redirects (302)', () => pm.expect(pm.response.code).to.eql(302));"]),
     item("14. GET detail - edited subject visible", "GET", "/staff-records/{{ncrId}}/",

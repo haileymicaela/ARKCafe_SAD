@@ -18,6 +18,31 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def _load_dotenv(path):
+    """Load simple KEY=VALUE pairs from .env without overriding real env vars."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export "):].lstrip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key, value = key.strip(), value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        if key:
+            os.environ.setdefault(key, value)
+
+
+_load_dotenv(BASE_DIR / ".env")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
@@ -44,6 +69,7 @@ INSTALLED_APPS = [
     'ncr',
     'administration',
     'reports',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +167,36 @@ MAILERS = {
 
 # Custom setting for file uploads
 DATA_UPLOAD_MAX_NUMBER_FILES = 20
+
+
+# SMS notifications (TextBee / textbee.dev)
+# Get the API key and Device ID from https://app.textbee.dev/dashboard
+TEXTBEE_ENABLED = os.environ.get("TEXTBEE_ENABLED", "True") == "True"
+TEXTBEE_API_KEY = os.environ.get("TEXTBEE_API_KEY", "")
+TEXTBEE_BASE_URL = os.environ.get("TEXTBEE_BASE_URL", "https://api.textbee.dev/api/v1")
+TEXTBEE_DEVICE_ID = os.environ.get("TEXTBEE_DEVICE_ID", "")
+TEXTBEE_TIMEOUT = int(os.environ.get("TEXTBEE_TIMEOUT", "15"))
+# Local numbers such as 09171234567 are converted to +639171234567
+TEXTBEE_DEFAULT_COUNTRY_CODE = os.environ.get("TEXTBEE_DEFAULT_COUNTRY_CODE", "63")
+# Prefix used in every NCR SMS; set to an empty string to remove it
+TEXTBEE_MESSAGE_PREFIX = os.environ.get("TEXTBEE_MESSAGE_PREFIX", "[NCR]")
+# Notify every Alert Recipient (set to False to limit to the NCR's department)
+TEXTBEE_NOTIFY_ALL_RECIPIENTS = os.environ.get("TEXTBEE_NOTIFY_ALL_RECIPIENTS", "True") == "True"
+# Log instead of send (useful while testing)
+TEXTBEE_DRY_RUN = os.environ.get("TEXTBEE_DRY_RUN", "False") == "True"
+
+# Show TextBee send/skip messages in the runserver console
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "notifications": {
+            "handlers": ["console"],
+            "level": os.environ.get("TEXTBEE_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}

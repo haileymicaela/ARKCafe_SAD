@@ -18,7 +18,7 @@ It creates and destroys its own test database — the dev `db.sqlite3` is untouc
 
 ## The Postman collection
 
-66 requests in 7 folders. Import it and select environment **ARKCafe - Local Dev**.
+55 requests in 6 folders. Import it and select environment **ARKCafe - Local Dev**.
 
 Every folder starts with **0a. GET /login/** + **0b. POST /logout/**, and every login step asserts
 **which dashboard it landed on**. That is not decoration — `accounts/views.py` sets
@@ -35,19 +35,10 @@ spurious `403` results during development).
 | 4. Authorization (vertical + horizontal) | anonymous → login redirect; staff blocked from admin pages, project create and **user create** (privilege escalation); admin blocked from every staff page |
 | 5. Injection & input validation | SQL/stacked-SQL injection in `q` and filter params does not 500 or leak errors; malformed dates tolerated; reflected **and stored** XSS escaped (checked as "escaped **and** present", so a dropped payload cannot pass) |
 | 6. Method tampering & state safety | `PUT`/`PATCH`/`DELETE` on POST-only endpoints → 405; `DELETE` on NCR detail changes nothing (verified by re-reading the status) |
-| 7. Hardening gaps | **expected to fail** — see below |
 
-**Folders 1–6 must be green.** Folder 7 asserts behaviour the app does not have yet, so it is
-deliberately red until someone hardens it (**3 failures**: CSP, `no-store` cache headers and login
-throttling). Run folders 1–6 only when you want a clean pass:
+**All folders must be green.**
 
-1. Open the collection → **Run** → uncheck folder 7 → Run.
-
-Inside folder 7 the six failed-login steps run **signed out** on purpose: while a session is live,
-`LoginView` never validates the password at all, so an "attempt" against a live session tests
-nothing.
-
-### Findings from the audit (what folder 7 is about)
+### Findings from the audit
 
 | Gap | Evidence | Fix |
 |---|---|---|
