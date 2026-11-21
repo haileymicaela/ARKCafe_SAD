@@ -1,0 +1,7 @@
+$kind: collection
+description: |-
+  NOT for manual one-off runs. Replay this folder with many iterations/virtual users:
+    - Postman desktop: collection > Run collection > Performance tab
+    - CLI: newman run ARKCafe.postman_collection.json -e ARKCafe.postman_environment.json --folder "04 Load Tests" -n 200
+  Every request has a pass/fail assertion, so assertion failures double as error-rate tracking under load.
+order: 5000

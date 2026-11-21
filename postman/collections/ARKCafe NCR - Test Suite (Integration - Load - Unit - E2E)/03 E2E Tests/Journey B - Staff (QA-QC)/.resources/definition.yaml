@@ -1,0 +1,4 @@
+$kind: collection
+name: Journey B - Staff (QA/QC)
+description: "Complete staff journey: login -> dashboard -> raise NCR -> progress -> resolve -> audit -> export -> logout."
+order: 2000

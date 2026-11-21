@@ -1,0 +1,3 @@
+$kind: collection
+description: Integration testing = chains of requests that share session/CSRF state and pass IDs between requests via collection variables.
+order: 3000

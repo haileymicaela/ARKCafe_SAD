@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/admin-departments/?q={{departmentName}}"
+method: GET
+queryParams:
+  q: "{{departmentName}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Department list 200', () => pm.expect(pm.response.code).to.eql(200));
+      const body = pm.response.text();
+      pm.test('New department appears in list', () => pm.expect(body).to.include(pm.collectionVariables.get('departmentName')));
+      const m = body.match(/data-id="(\d+)"/);
+      pm.test('Department row found', () => pm.expect(!!m).to.be.true);
+      if (m) pm.collectionVariables.set('departmentId', m[1]);
+    language: text/javascript
+order: 2000

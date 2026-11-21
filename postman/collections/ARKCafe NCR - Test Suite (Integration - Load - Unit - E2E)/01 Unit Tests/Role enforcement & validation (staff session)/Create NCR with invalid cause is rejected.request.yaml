@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/staff-create"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    project: "{{projectId}}"
+    department: "{{departmentId}}"
+    cause: bogus-cause
+    subject: Unit test
+    issued_date: 2026-01-15
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Form re-renders with 200', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('Invalid choice error shown', () => pm.expect(pm.response.text()).to.include('Select a valid choice'));
+    language: text/javascript
+order: 9000

@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET /reports/admin/dashboard/ renders
+url: "{{baseUrl}}/reports/admin/dashboard"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Reports dashboard 200', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('Dashboard content rendered', () => pm.expect(pm.response.text()).to.include('Dashboard'));
+    language: text/javascript
+order: 4000

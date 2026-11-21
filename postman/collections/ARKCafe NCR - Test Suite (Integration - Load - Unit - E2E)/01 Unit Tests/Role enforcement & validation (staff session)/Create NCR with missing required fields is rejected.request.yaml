@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/staff-create"
+method: POST
+headers:
+  X-CSRFToken: "{{csrfToken}}"
+body:
+  type: urlencoded
+  content:
+    project: "{{projectId}}"
+    department: "{{departmentId}}"
+    cause: material
+    subject: ""
+    issued_date: ""
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Form re-renders with 200', () => pm.expect(pm.response.code).to.eql(200));
+      pm.test('Required-field errors shown', () => pm.expect(pm.response.text()).to.include('This field is required'));
+    language: text/javascript
+order: 8000

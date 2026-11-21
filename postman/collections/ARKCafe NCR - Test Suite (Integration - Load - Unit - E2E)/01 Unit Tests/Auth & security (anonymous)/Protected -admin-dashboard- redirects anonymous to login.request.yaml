@@ -1,0 +1,14 @@
+$kind: http-request
+name: Protected /admin-dashboard/ redirects anonymous to login
+url: "{{baseUrl}}/admin-dashboard"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status is 302', () => pm.expect(pm.response.code).to.eql(302));
+      const loc = pm.response.headers.get('Location') || '';
+      pm.test('Redirects to login', () => pm.expect(loc).to.include('/login/'));
+    language: text/javascript
+settings:
+  followRedirects: false
+order: 5000
