@@ -22,17 +22,59 @@
   .users-search { position:relative; display:flex; flex:1 1 auto; min-width:180px; align-items:center; }
   .users-search > i { position:absolute; left:14px; z-index:1; color:#6b7280; font-size:14px; }
   .users-search .form-control { height:38px; padding-left:38px; border-color:#d5d2d2; border-radius:8px; font-size:12px; }
+  .users-search .form-control:focus { border-color:#68161d; box-shadow:none; }
   .users-filter-select { position:relative; flex:0 0 auto; }
   .users-filter-select.role { width:104px; }
   .users-filter-select.status { width:114px; }
   .users-filter-select.sort { width:136px; }
-  .users-filter-select > i:first-child { position:absolute; top:50%; left:11px; z-index:1; color:#555; font-size:13px; transform:translateY(-50%); pointer-events:none; }
-  .users-filter-select > i:last-child { position:absolute; top:50%; right:10px; color:#333; font-size:10px; transform:translateY(-50%); pointer-events:none; }
-  .users-filter-select .form-select { height:38px; padding:6px 25px 6px 31px; border-color:#d5d2d2; border-radius:8px; background-image:none; color:#252525; font-size:11px; font-weight:600; cursor:pointer; }
+  .users-filter-select > i:first-child { position:absolute; top:50%; left:11px; z-index:1; color:#5f5c63; font-size:13px; transform:translateY(-50%); pointer-events:none; }
+  .users-filter-select > i:last-child { position:absolute; top:50%; right:10px; color:#5f5c63; font-size:9px; transform:translateY(-50%); pointer-events:none; }
+  .users-filter-select .form-select { height:38px; padding:0 25px 0 31px; border-color:#e3e1e4; border-radius:7px; background-image:none; color:#302e33; font-size:11px; font-weight:500; cursor:pointer; }
+  .users-filter-select:focus-within .form-select { border-color:#c9a1a4; color:#68161d; box-shadow:none; }
+  .users-mobile-add, .users-mobile-list, .users-mobile-count { display:none; }
   @media (max-width:700px) {
     .users-toolbar { flex-wrap:wrap; }
     .users-search { flex-basis:100%; }
     .users-filter-select { flex:1 1 30%; width:auto !important; }
+  }
+  @media (max-width:575.98px) {
+    .admin-users-responsive .content-wrapper { padding:16px; }
+    .admin-users-responsive .page-header { align-items:flex-start !important; margin-bottom:10px !important; padding:0; border:0; }
+    .admin-users-responsive .page-header > div:first-child { min-width:0; }
+    .admin-users-responsive .page-header h1 { margin:0 0 2px; font-size:24px; line-height:1.2; }
+    .admin-users-responsive .page-header p { margin:0; font-size:14px; line-height:1.35; }
+    .admin-users-responsive .page-header > button { display:none; }
+    .users-toolbar { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px 8px; margin-bottom:8px; }
+    .users-search { grid-column:span 2; min-width:0; width:100%; }
+    .users-search .form-control { height:44px; padding-left:42px; border-radius:10px; font-size:14px; }
+    .users-search > i { left:16px; }
+    .users-mobile-add { display:inline-flex; grid-column:3; height:44px; align-items:center; justify-content:center; gap:6px; padding:0 8px; border:0; border-radius:9px; font-size:13px; font-weight:600; white-space:nowrap; }
+    .users-filter-select { width:auto !important; }
+    .users-filter-select.role { grid-column:1; }
+    .users-filter-select.status { grid-column:2; }
+    .users-filter-select.sort { grid-column:3; }
+    .users-filter-select .form-select { height:44px; padding-left:31px; padding-right:22px; border-color:#d5d2d2; border-radius:9px; font-size:13px; }
+    .users-filter-select > i:first-child { left:11px; font-size:12px; }
+    .users-filter-select > i:last-child { right:8px; }
+    .users-mobile-count { display:block; margin:0 0 10px; color:#6b6870; font-size:14px; font-weight:500; }
+    .users-desktop-table { display:none; }
+    .users-mobile-list { display:grid; gap:11px; }
+    .user-mobile-card { min-width:0; padding:14px 16px 15px; border:1px solid #e2dfe0; border-radius:13px; background:#fff; }
+    .user-mobile-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; }
+    .user-mobile-name { min-width:0; overflow-wrap:anywhere; color:#761216; font-size:14px; font-weight:700; }
+    .user-mobile-card.is-inactive .user-mobile-name,
+    .user-mobile-card.is-inactive .user-mobile-email,
+    .user-mobile-card.is-inactive .user-mobile-meta { color:#717078; }
+    .user-mobile-status { flex:0 0 auto; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; line-height:1.2; }
+    .user-mobile-status.is-active { background:#e4f5eb; color:#087a43; }
+    .user-mobile-status.is-inactive { background:#e8e6e7; color:#68666d; }
+    .user-mobile-email { overflow-wrap:anywhere; color:#1c1b1f; font-size:14px; line-height:1.4; }
+    .user-mobile-meta { margin-top:3px; color:#66636c; font-size:12px; line-height:1.35; }
+    .user-mobile-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:9px; }
+    .user-mobile-actions .btn { padding:3px 11px; border:0; border-radius:6px; font-size:12px !important; line-height:1.4; }
+    .user-mobile-actions .btn-delete { color:#44424a; }
+    .users-table-card { overflow:visible !important; border:0 !important; background:transparent; box-shadow:none !important; }
+    .users-table-card .system-pagination-footer { margin-top:12px; padding:10px 0; }
   }
 </style>
 {% endblock %}
@@ -49,8 +91,9 @@
   <label class="users-search">
     <i class="bi bi-search" aria-hidden="true"></i>
     <input type="search" name="q" value="{{ q }}" class="form-control"
-           placeholder="Search by Name or email..." aria-label="Search users by name or email">
+           placeholder="Search by Name or email" aria-label="Search users by name or email">
   </label>
+  <button type="button" class="btn btn-crimson users-mobile-add" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add User</button>
   <div class="users-filter-select role">
     <i class="bi bi-sort-down" aria-hidden="true"></i>
     <select name="role" class="form-select" data-autosubmit aria-label="Filter by role">
@@ -76,8 +119,9 @@
 </form>
 
 <!-- Table -->
-<div class="card border shadow-sm rounded-3 overflow-hidden">
-  <div class="table-responsive">
+<div class="users-mobile-count">{{ page_obj.paginator.count }} accounts</div>
+<div class="card border shadow-sm rounded-3 overflow-hidden users-table-card">
+  <div class="table-responsive users-desktop-table">
     <table class="table user-table align-middle mb-0">
       <thead class="table-light">
         <tr>
@@ -101,7 +145,7 @@
                     data-active="{% if u.is_active %}1{% else %}0{% endif %}">Edit</button>
             <button type="button" class="btn btn-soft js-reset"
                     data-id="{{ u.user_id }}" data-name="{{ u.full_name }}">Reset Password</button>
-            <button type="button" class="btn btn-soft js-delete"
+            <button type="button" class="btn btn-delete js-delete"
                     data-id="{{ u.user_id }}" data-name="{{ u.full_name }}"
                     data-active="{% if u.is_active %}1{% else %}0{% endif %}"
                     data-ncrs="{{ u.ncr_count }}" data-audits="{{ u.audit_count }}"
@@ -115,18 +159,39 @@
       </tbody>
     </table>
   </div>
-  <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
-    <span class="small text-muted">
+  <div class="users-mobile-list">
+    {% for u in page_obj %}
+    <article class="user-mobile-card{% if not u.is_active %} is-inactive{% endif %}">
+      <div class="user-mobile-top">
+        <strong class="user-mobile-name">{{ u.full_name }}</strong>
+        {% if u.is_active %}<span class="user-mobile-status is-active"><i class="bi bi-circle-fill me-1" style="font-size:7px"></i>Active</span>
+        {% else %}<span class="user-mobile-status is-inactive"><i class="bi bi-circle-fill me-1" style="font-size:7px"></i>Inactive</span>{% endif %}
+      </div>
+      <div class="user-mobile-email">{{ u.email }}</div>
+      <div class="user-mobile-meta">{{ u.department.department_name|default:"—" }} | {{ u.get_role_display }}</div>
+      <div class="user-mobile-actions admin-actions-group">
+        <button type="button" class="btn btn-soft" data-bs-toggle="modal" data-bs-target="#editModal"
+                data-id="{{ u.user_id }}" data-name="{{ u.full_name }}" data-email="{{ u.email }}"
+                data-dept="{{ u.department_id|default:'' }}" data-role="{{ u.role }}"
+                data-active="{% if u.is_active %}1{% else %}0{% endif %}">Edit</button>
+        <button type="button" class="btn btn-soft js-reset" data-id="{{ u.user_id }}" data-name="{{ u.full_name }}">Reset Password</button>
+        <button type="button" class="btn btn-delete js-delete" data-id="{{ u.user_id }}" data-name="{{ u.full_name }}"
+                data-active="{% if u.is_active %}1{% else %}0{% endif %}" data-ncrs="{{ u.ncr_count }}"
+                data-audits="{{ u.audit_count }}" data-activities="{{ u.activity_count }}">Delete</button>
+      </div>
+    </article>
+    {% empty %}<div class="user-mobile-card text-center text-muted">No accounts found.</div>{% endfor %}
+  </div>
+  <div class="system-pagination-footer">
+    <small class="text-muted">
       {% if page_obj.paginator.count %}Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} accounts{% else %}No accounts{% endif %}
-    </span>
-    <div class="d-flex gap-2">
-      {% if page_obj.has_previous %}
-      <a class="btn btn-outline-secondary btn-sm" href="?{% if qs %}{{ qs }}&{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
-      {% else %}<span class="btn btn-outline-secondary btn-sm disabled">Prev</span>{% endif %}
-      {% if page_obj.has_next %}
-      <a class="btn btn-crimson btn-sm" href="?{% if qs %}{{ qs }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
-      {% else %}<span class="btn btn-crimson btn-sm disabled">Next</span>{% endif %}
-    </div>
+    </small>
+    <nav class="system-pagination" aria-label="User account pages">
+      {% if page_obj.has_previous %}<a href="?{% if qs %}{{ qs }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+      {% else %}<span class="is-disabled">Prev</span>{% endif %}
+      {% if page_obj.has_next %}<a class="next-page" href="?{% if qs %}{{ qs }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% else %}<span class="next-page is-disabled">Next</span>{% endif %}
+    </nav>
   </div>
 </div>
 

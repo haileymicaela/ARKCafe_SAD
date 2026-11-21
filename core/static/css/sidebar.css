@@ -151,6 +151,15 @@ body {
     font-weight: 600;
 }
 
+.page-header .header-add-button {
+    height: 35px;
+    padding: 6px 12px;
+    border: 1px solid var(--sidebar-maroon);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
 .topbar-right {
     margin-left: auto;
     display: flex;
@@ -241,27 +250,46 @@ body {
         padding: 16px;
     }
 
-    body.reports-responsive .topbar {
-        height: 40px;
-        min-height: 40px;
-        gap: 8px;
-        padding: 0 10px;
+    .topbar {
+        height: 64px;
+        min-height: 64px;
+        gap: 16px;
+        padding: 0 24px;
     }
 
+    .topbar > nav { display: none !important; }
+    .topbar > .mobile-brand {
+        display: inline-flex;
+        flex: 0 1 auto;
+        min-width: 0;
+        color: var(--sidebar-maroon) !important;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .topbar #sidebarToggle {
+        display: inline-flex;
+        flex: 0 0 24px;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 32px;
+        margin: 0 !important;
+        padding: 0;
+        color: #252525;
+        background: transparent;
+        border: 0;
+    }
+
+    .topbar #sidebarToggle i { font-size: 24px !important; }
+    .topbar-right { flex: 0 0 auto; gap: 0; margin-left: auto; }
+    .topbar-right .user-role { display: none !important; }
+    .topbar-right .user-avatar { width: 36px; height: 36px; font-size: 12px; }
+
     body.reports-responsive .content-wrapper { padding: 10px; }
-    /* The mobile header has its own compact brand/back label. Never render the
-       desktop breadcrumb beside it at the same time. */
-    body.reports-responsive .topbar > nav { display: none !important; }
-    body.reports-responsive .topbar > .mobile-brand { flex: 0 1 auto; min-width: 0; white-space: nowrap; color: var(--sidebar-maroon) !important; text-decoration: none !important; }
-    body.reports-responsive .topbar > .mobile-brand-back { overflow: hidden; text-overflow: ellipsis; }
-    body.reports-responsive .topbar #sidebarToggle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 24px; margin-right: 0 !important; padding: 0; color: var(--sidebar-maroon); }
-    body.reports-responsive .topbar #sidebarToggle i { font-size: 16px !important; }
-    body.reports-responsive .mobile-brand { display: inline-flex; align-items: center; gap: 6px; color: var(--sidebar-maroon); text-decoration: none; font-size: 14px; font-weight: 700; }
-    body.reports-responsive .mobile-brand:hover { color: var(--sidebar-maroon); }
-    body.reports-responsive .mobile-brand > i { font-size: 12px; }
-    body.reports-responsive .mobile-brand-back { font-size: 12px; font-weight: 600; }
-    body.reports-responsive .topbar-right { gap: 6px; }
-    body.reports-responsive .topbar-right .user-avatar { width: 28px; height: 28px; font-size: 11px; }
+    /* Reports pages use a compact content area below the shared mobile header. */
     body.reports-responsive .topbar-right .user-role { max-width: min(38vw, 180px); font-size: 12px; }
     body.reports-responsive .page-header { margin-bottom: 10px !important; }
     body.reports-responsive .page-header h1 { margin-bottom: 2px; font-size: 1.15rem; }

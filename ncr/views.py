@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from core.decorators import staff_required
-from core.models import Attachment, Department, NcrRecord, Project
+from core.models import Attachment, Department, NcrRecord, Project, Recipient
 
 from . import hooks, services
 from .forms import NcrForm, StatusUpdateForm
@@ -213,6 +213,12 @@ def ncr_detail(request, pk):
     else:
         save_feedback = None
 
+    status_feedback = request.session.get("ncr_status_feedback")
+    if status_feedback and status_feedback.get("ncr_id") == ncr.pk:
+        request.session.pop("ncr_status_feedback", None)
+    else:
+        status_feedback = None
+
     if request.method == "POST":
         status_form = StatusUpdateForm(request.POST, ncr=ncr)
 
@@ -229,16 +235,28 @@ def ncr_detail(request, pk):
                 d["resolve_date"],
             )
 
-            messages.success(
-                request,
-                f"{ncr.reference_no} is now {ncr.get_status_display()}",
-                extra_tags="Status updated"
-            )
+            request.session["ncr_status_feedback"] = {"ncr_id": ncr.pk}
 
             return redirect("ncr_detail", pk=ncr.pk)
 
     else:
         status_form = StatusUpdateForm(ncr=ncr)
+
+    sms_alert_departments = list(
+        Recipient.objects.values_list("department__department_name", flat=True)
+        .distinct()
+        .order_by("department__department_name")
+    )
+    if len(sms_alert_departments) < 2:
+        sms_alert_department_summary = "".join(sms_alert_departments)
+    elif len(sms_alert_departments) == 2:
+        sms_alert_department_summary = " and ".join(sms_alert_departments)
+    else:
+        sms_alert_department_summary = (
+            ", ".join(sms_alert_departments[:-1])
+            + ", and "
+            + sms_alert_departments[-1]
+        )
 
     return render(request, "ncr/ncr_detail.html", {
         "ncr": ncr,
@@ -252,6 +270,9 @@ def ncr_detail(request, pk):
         "today": timezone.localdate(),
         "open_statuses": NcrRecord.OPEN_STATUSES,
         "save_feedback": save_feedback,
+        "status_feedback": status_feedback,
+        "sms_alert_departments": sms_alert_departments,
+        "sms_alert_department_summary": sms_alert_department_summary,
     })
 
 

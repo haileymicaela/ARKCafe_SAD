@@ -10,25 +10,17 @@
   .btn-soft:hover { background:#dfe2e6; }
 
   .ar-search { position:relative; margin-bottom:16px; }
-  .ar-search input { width:100%; padding:9px 12px 9px 34px; font-size:13px;
-                     border:1px solid #e5e7eb; border-radius:8px; background:#fff; outline:none; }
-  .ar-search input:focus { border-color:#6b0f12; }
-  .ar-search .ico { position:absolute; left:12px; top:50%; transform:translateY(-50%);
-                    color:#6b7280; font-size:13px; pointer-events:none; }
+  .ar-search input { width:100%; height:38px; box-sizing:border-box; padding:6px 12px 6px 38px; font-size:14px;
+                     border:1px solid #d5d2d2; border-radius:8px; background:#fff; outline:none; }
+  .ar-search:focus-within input { border-color:#68161d; box-shadow:none; }
+  .ar-search .ico { position:absolute; left:14px; top:50%; transform:translateY(-50%);
+                    color:#6b7280; font-size:14px; pointer-events:none; }
 
   .ar-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
-  .ar-table { margin:0; }
-  .ar-table th { font-size:14px; color:#6b7280; font-weight:600; padding:12px 16px;
-                 background:#fff; border-bottom:1px solid #e5e7eb; }
-  .ar-table td { padding:14px 16px; font-size:13px; vertical-align:middle;
-                 border-bottom:1px solid #f1f1f1; }
-  .ar-table tr:last-child td { border-bottom:0; }
+  .ar-mobile-list { display:none; }
+  .ar-table th { font-size:14px; font-weight:500; color:var(--text-muted); white-space:nowrap; }
   .ar-name { font-weight:700; color:#111827; }
   .ar-muted { color:#6b7280; }
-  .btn-act { background:#eceef1; color:#111827; border:0; font-size:12px; font-weight:600;
-             padding:5px 10px; border-radius:6px; }
-  .btn-act:hover { background:#dfe2e6; }
-
   .am-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
                  z-index:2000; align-items:center; justify-content:center; padding:16px; }
   .am-backdrop.open { display:flex; }
@@ -65,6 +57,36 @@
              padding:8px; font-size:13px; font-weight:600; }
   .am-wide:hover { background:#f3f4f6; }
 </style>
+<style>
+  .recipient-subtitle-mobile { display:none; }
+  @media (max-width:575.98px) {
+    .alert-recipients-responsive .content-wrapper { padding:16px 20px; }
+    .alert-recipients-responsive .page-header { align-items:flex-start !important; gap:8px; margin-bottom:14px !important; padding:0; border:0; }
+    .alert-recipients-responsive .page-header > div:first-child { flex:1 1 auto; min-width:0; }
+    .alert-recipients-responsive .page-header h1 { margin:0 0 1px; font-size:22px; line-height:1.2; }
+    .alert-recipients-responsive .page-header p { margin:0; font-size:14px; line-height:1.35; }
+    .alert-recipients-responsive .recipient-subtitle-desktop { display:none; }
+    .alert-recipients-responsive .recipient-subtitle-mobile { display:inline; }
+    .alert-recipients-responsive .page-header > .header-add-button { flex:0 0 auto; height:35px; margin-top:2px; padding:6px 10px; border-radius:8px; font-size:12px; white-space:nowrap; }
+    .alert-recipients-responsive .content-wrapper > .d-flex { margin-bottom:12px !important; }
+    .ar-search { margin-bottom:12px; }
+    .ar-search input { height:42px; padding-left:42px; border-radius:10px; font-size:14px; }
+    .ar-search .ico { left:16px; }
+    .ar-desktop-table { display:none; }
+    .ar-mobile-list { display:grid; gap:10px; }
+    .ar-mobile-card { min-width:0; padding:14px; background:#fff; border:1px solid #e2dfe0; border-radius:13px; }
+    .ar-mobile-card-top { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:8px; }
+    .ar-mobile-card-top > strong { min-width:0; overflow-wrap:anywhere; color:#151515; font-size:14px; font-weight:700; line-height:1.25; }
+    .ar-mobile-card .admin-actions-group { flex:0 0 auto; gap:8px; }
+    .ar-mobile-card .admin-actions-group .btn-soft,
+    .ar-mobile-card .admin-actions-group .btn-delete { padding:3px 10px; border-radius:6px; font-size:12px !important; line-height:1.5; }
+    .ar-mobile-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:11px; }
+    .ar-mobile-meta > div { display:flex; min-width:0; flex-direction:column; gap:2px; }
+    .ar-mobile-meta span { color:#6b6870; font-size:11px; line-height:1.2; }
+    .ar-mobile-meta strong { overflow-wrap:anywhere; color:#171717; font-size:14px; font-weight:400; line-height:1.25; }
+    .ar-mobile-empty { padding:24px 14px; border:1px solid #e2dfe0; border-radius:13px; background:#fff; color:#6b6870; text-align:center; font-size:14px; }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -75,27 +97,29 @@
   </form>
 </div>
 
-<div class="ar-card">
+<div class="ar-card ar-desktop-table">
   <div class="table-responsive">
-    <table class="table ar-table">
-      <thead>
-        <tr><th>Name</th><th>Mobile Number</th><th>Department</th><th>Action</th></tr>
+    <table class="table ar-table align-middle mb-0">
+      <thead class="table-light">
+        <tr><th class="ps-4">Name</th><th>Mobile Number</th><th>Department</th><th>Action</th></tr>
       </thead>
       <tbody>
         {% for r in recipients %}
         <tr>
-          <td class="ar-name">{{ r.name }}</td>
+          <td class="ar-name ps-4">{{ r.name }}</td>
           <td class="ar-muted">{{ r.mobile_number }}</td>
           <td>{{ r.department }}</td>
-          <td class="text-nowrap">
-            <button type="button" class="btn-act btn-edit"
+          <td class="admin-actions-cell">
+            <div class="admin-actions-group">
+            <button type="button" class="btn btn-soft btn-edit"
                     data-action="{% url 'alert_recipient_edit' r.pk %}"
                     data-name="{{ r.name }}"
                     data-mobile_number="{{ r.mobile_number }}"
                     data-department="{{ r.department_id }}">Edit</button>
-            <button type="button" class="btn-act btn-del"
+            <button type="button" class="btn btn-delete btn-del"
                     data-action="{% url 'alert_recipient_delete' r.pk %}"
                     data-name="{{ r.name }}">Delete</button>
+            </div>
           </td>
         </tr>
         {% empty %}
@@ -104,6 +128,30 @@
       </tbody>
     </table>
   </div>
+</div>
+
+<div class="ar-mobile-list">
+  {% for r in recipients %}
+  <article class="ar-mobile-card">
+    <div class="ar-mobile-card-top">
+      <strong>{{ r.name }}</strong>
+      <div class="admin-actions-group">
+        <button type="button" class="btn btn-soft btn-edit"
+                data-action="{% url 'alert_recipient_edit' r.pk %}"
+                data-name="{{ r.name }}"
+                data-mobile_number="{{ r.mobile_number }}"
+                data-department="{{ r.department_id }}">Edit</button>
+        <button type="button" class="btn btn-delete btn-del"
+                data-action="{% url 'alert_recipient_delete' r.pk %}"
+                data-name="{{ r.name }}">Delete</button>
+      </div>
+    </div>
+    <div class="ar-mobile-meta">
+      <div><span>Mobile Number</span><strong>{{ r.mobile_number }}</strong></div>
+      <div><span>Department</span><strong>{{ r.department }}</strong></div>
+    </div>
+  </article>
+  {% empty %}<div class="ar-mobile-empty">No recipients found.</div>{% endfor %}
 </div>
 
 <!-- Add / Edit modal -->
@@ -192,6 +240,30 @@
   const closeM = (el) => el.classList.remove("open");
   const field = (n) => form.querySelector('[name="' + n + '"]');
 
+  const mobileInput = field("mobile_number");
+  const normalizeMobile = (value) => {
+    const digits = value.replace(/\D/g, "");
+    if (digits.startsWith("09")) return "09" + digits.slice(2, 11);
+    return "09" + digits.slice(-9);
+  };
+  mobileInput.addEventListener("input", () => {
+    const oldLength = mobileInput.value.length;
+    const cursor = mobileInput.selectionStart || 0;
+    mobileInput.value = normalizeMobile(mobileInput.value);
+    const nextCursor = Math.max(2, Math.min(mobileInput.value.length,
+      cursor + mobileInput.value.length - oldLength));
+    mobileInput.setSelectionRange(nextCursor, nextCursor);
+  });
+  mobileInput.addEventListener("keydown", (event) => {
+    const start = mobileInput.selectionStart || 0;
+    const end = mobileInput.selectionEnd || 0;
+    if ((event.key === "Backspace" && start <= 2 && end <= 2) ||
+        (event.key === "Delete" && start < 2 && end <= 2)) {
+      event.preventDefault();
+      mobileInput.setSelectionRange(2, 2);
+    }
+  });
+
   function clearErrors() {
     form.querySelectorAll(".am-err").forEach(e => e.remove());
     form.querySelectorAll(".has-error").forEach(e => e.classList.remove("has-error"));
@@ -209,7 +281,7 @@
     clearErrors();
     setMode(false);
     form.action = addUrl;
-    fieldNames.forEach(n => { const el = field(n); if (el) el.value = ""; });
+    fieldNames.forEach(n => { const el = field(n); if (el) el.value = n === "mobile_number" ? "09" : ""; });
     openM(modal);
   });
 
@@ -219,6 +291,7 @@
       setMode(true);
       form.action = btn.dataset.action;
       fieldNames.forEach(n => { const el = field(n); if (el) el.value = btn.dataset[n] || ""; });
+      mobileInput.value = normalizeMobile(mobileInput.value);
       openM(modal);
     });
   });
@@ -238,6 +311,10 @@
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") document.querySelectorAll(".am-backdrop.open").forEach(closeM);
   });
+
+  if (modal.classList.contains("open")) {
+    mobileInput.value = normalizeMobile(mobileInput.value);
+  }
 })();
 </script>
 {% endblock %}

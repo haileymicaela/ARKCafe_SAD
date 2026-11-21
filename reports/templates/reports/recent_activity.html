@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=activity-mobile-5">
-<link rel="stylesheet" href="{% static 'reports/css/recent_activity.css' %}?v=activity-mobile-5">
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=mobile-header-1">
+<link rel="stylesheet" href="{% static 'reports/css/recent_activity.css' %}?v=activity-mobile-11">
 {% endblock %}
 {% block content %}
 <form method="GET" class="activity-toolbar mb-3" id="activity-filter-form">
@@ -68,12 +68,12 @@
         <table class="table activity-table activity-desktop-view table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th class="py-3 px-4 text-muted">Date &amp; time</th>
-                    <th class="py-3 text-muted">Action</th>
-                    <th class="py-3 text-muted">Entity</th>
-                    <th class="py-3 text-muted">Name</th>
-                    <th class="py-3 text-muted">Changes</th>
-                    <th class="py-3 text-muted">Performed by</th>
+                    <th class="ps-4">Date &amp; time</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Name</th>
+                    <th>Changes</th>
+                    <th>Performed by</th>
                 </tr>
             </thead>
             <tbody>

@@ -16,8 +16,8 @@
     </a>
     
     <!-- Projects -->
-    <a href="{% url 'admin_projects' %}" 
-       class="nav-link {% if request.resolver_match.url_name == 'admin_projects' %}active{% endif %}">
+    <a href="{% url 'project_list' %}" 
+       class="nav-link {% if request.resolver_match.url_name == 'project_list' or request.resolver_match.url_name == 'project_add' or request.resolver_match.url_name == 'project_edit' %}active{% endif %}">
         <i class="bi bi-folder2"></i> Projects
     </a>
     

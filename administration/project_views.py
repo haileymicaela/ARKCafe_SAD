@@ -81,7 +81,11 @@ def project_add(request):
         p = form.save()
         log_activity(request.user, "create", "project", p.pk, p.project_name,
                      new_value=p.project_code)
-        messages.success(request, f"Project {p.project_code} added.")
+        messages.success(
+            request,
+            f"{p.project_name} was added successfully",
+            extra_tags="Project added",
+        )
         return redirect("project_list")
     return _render_list(request, form, "Add Project", request.path)
 
@@ -117,11 +121,16 @@ def project_delete(request, pk):
         )
         return redirect("project_list")
     project_id = project.pk
+    project_name = project.project_name
     try:
         project.delete()
-        log_activity(request.user, "delete", "project", project_id, project.project_name,
+        log_activity(request.user, "delete", "project", project_id, project_name,
                      old_value=project.project_code)
-        messages.success(request, "Project deleted.")
+        messages.success(
+            request,
+            f"{project_name} was deleted successfully",
+            extra_tags="Project deleted",
+        )
     except ProtectedError:
         messages.error(
             request,

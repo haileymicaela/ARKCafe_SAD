@@ -9,7 +9,7 @@
     <div class="ncr-records-toolbar">
       <label class="search-container mb-0">
         <i class="bi bi-search"></i>
-        <input type="search" name="q" value="{{ filters.q|default:'' }}" class="form-control shadow-sm border-0" placeholder="Search by NCR no., subject, or project..." aria-label="Search NCR records">
+        <input type="search" name="q" value="{{ filters.q|default:'' }}" class="form-control" placeholder="Search NCR no., subject, project..." aria-label="Search NCR records">
       </label>
       <input type="hidden" name="sort" value="{{ sort }}">
       <div class="ncr-records-controls">
@@ -18,7 +18,8 @@
         </button>
         <button type="submit" name="sort" value="{% if sort == 'newest' %}oldest{% else %}newest{% endif %}" class="ncr-toolbar-control ncr-sort-button" title="Switch to {% if sort == 'newest' %}oldest first{% else %}newest first{% endif %}">
           {% if sort == 'newest' %}<i class="bi bi-sort-down" aria-hidden="true"></i>{% else %}<i class="bi bi-sort-up" aria-hidden="true"></i>{% endif %}
-          {% if sort == 'newest' %}Newest first{% else %}Oldest first{% endif %}
+          <span class="ncr-sort-label-desktop">{% if sort == 'newest' %}Newest first{% else %}Oldest first{% endif %}</span>
+          <span class="ncr-sort-label-mobile">{% if sort == 'newest' %}Newest{% else %}Oldest{% endif %}</span>
           <i class="bi bi-chevron-down ncr-control-chevron" aria-hidden="true"></i>
         </button>
       </div>
@@ -43,6 +44,7 @@
     </div>
     {% endif %}
 
+    <div class="ncr-mobile-count">{{ page_obj.paginator.count }} NCR{{ page_obj.paginator.count|pluralize }}</div>
     <div class="ncr-records-card">
       <div class="ncr-table-scroll">
         <div class="ncr-grid-header">
@@ -53,7 +55,7 @@
           <a href="{% url 'ncr_detail' n.pk %}" class="ncr-record-row text-decoration-none">
             <div class="ncr-reference">{{ n.reference_no }}</div>
             <div class="ncr-subject"><span>{{ n.subject|truncatechars:60 }}</span><small>Package {{ n.package_no|default:'—' }}</small></div>
-            <div class="ncr-project">{{ n.project.project_name }}</div>
+            <div class="ncr-project"><span>{{ n.project.project_name }}</span><small class="ncr-mobile-package"> · Package {{ n.package_no|default:'—' }}</small></div>
             <div><span class="badge badge-cause">{{ n.get_cause_display }}</span></div>
             <div><span class="badge badge-{{ n.status }}"><span class="ncr-status-dot"></span>{{ n.get_status_display }}</span></div>
             <div class="ncr-date">{{ n.issued_date|date:'M d, Y'|default:'—' }}</div>
@@ -65,8 +67,8 @@
           {% endfor %}
         </div>
       </div>
-      <div class="ncr-records-footer">
-        <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs</span>
+      <div class="ncr-records-footer system-pagination-footer">
+        <small>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs</small>
         {% include "ncr/_pagination.html" %}
       </div>
     </div>

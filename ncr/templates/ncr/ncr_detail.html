@@ -66,7 +66,7 @@
           <div class="ncr-history-entry">
             <span class="ncr-history-marker"></span>
             <div>
-              <div class="ncr-history-title">{% if h.old_status %}Changed from <span class="badge badge-{{ h.old_status }}">{{ h.get_old_status_display }}</span> to {% else %}Created as {% endif %}<span class="badge badge-{{ h.new_status }}">{{ h.get_new_status_display }}</span></div>
+              <div class="ncr-history-title">{% if h.old_status %}<span class="badge badge-{{ h.old_status }}">{{ h.get_old_status_display }}</span><i class="bi bi-arrow-right" aria-hidden="true"></i><span class="badge badge-{{ h.new_status }}">{{ h.get_new_status_display }}</span>{% else %}<span class="ncr-history-created">Created as</span><span class="badge badge-{{ h.new_status }}">{{ h.get_new_status_display }}</span>{% endif %}</div>
               {% if h.remarks %}<p>{{ h.remarks }}</p>{% endif %}
               <small>{{ h.user.full_name }} · {{ h.changed_at|date:'M d, Y · g:i A' }}</small>
             </div>
@@ -84,11 +84,29 @@
     <div class="ncr-success-icon"><i class="bi bi-check-lg"></i></div>
     <h2 id="ncrSaveSuccessTitle">{{ ncr.reference_no }} {% if save_feedback.kind == 'created' %}created{% else %}edited{% endif %}</h2>
     <p>{% if save_feedback.kind == 'created' %}Your NCR was saved with status Open and has been added to the audit history.{% else %}Your changes were saved successfully.{% endif %}</p>
+    {% if save_feedback.kind == 'created' %}
+    <div class="ncr-sms-alerts">
+      <strong>SMS alerts sent to</strong>
+      {% if sms_alert_departments %}
+      <ul>{% for department in sms_alert_departments %}<li><i class="bi bi-check-lg" aria-hidden="true"></i><span>{{ department }}</span></li>{% endfor %}</ul>
+      {% else %}<p>No alert recipient departments are configured.</p>{% endif %}
+    </div>
+    {% endif %}
     <div class="ncr-success-actions">
       {% if save_feedback.kind == 'created' %}<a href="{% url 'staff_create_ncr' %}" class="btn btn-outline-secondary">Create another</a>{% endif %}
       <a href="{% url 'ncr_detail' ncr.pk %}" class="btn btn-crimson">View NCR</a>
     </div>
   </div></div>
+</div>
+{% endif %}
+
+{% if status_feedback %}
+<div class="ncr-status-toast" role="status" aria-live="polite">
+  <span class="ncr-status-toast-icon"><i class="bi bi-check-lg"></i></span>
+  <div>
+    <strong>Status updated to {{ ncr.get_status_display }}</strong>
+    <p>{% if sms_alert_departments %}SMS alerts sent to {{ sms_alert_departments|join:", " }}.{% else %}No alert recipient departments are configured.{% endif %}</p>
+  </div>
 </div>
 {% endif %}
 
@@ -107,7 +125,7 @@
           <div class="mb-3"><label for="{{ status_form.resolution_note.id_for_label }}" class="form-label">{{ status_form.resolution_note.label }}</label>{{ status_form.resolution_note }}</div>
         </div>
         <div class="mb-3"><label for="{{ status_form.remarks.id_for_label }}" class="form-label">{{ status_form.remarks.label }}</label>{{ status_form.remarks }}{% for error in status_form.remarks.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>
-        <div class="ncr-status-notice"><i class="bi bi-bell"></i><span>This status change will be recorded in the NCR history.</span></div>
+        <div class="ncr-status-notice"><i class="bi bi-bell"></i><span>{% if sms_alert_departments %}An SMS alert will be sent to {{ sms_alert_department_summary }}.{% else %}No SMS alert recipients are configured.{% endif %}</span></div>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-crimson">Save status</button></div>
     </form>
@@ -138,6 +156,14 @@
 document.addEventListener('DOMContentLoaded', function () {
   var modal = document.getElementById('ncrSaveSuccessModal');
   if (modal && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modal).show();
+});
+</script>
+{% endif %}
+{% if status_feedback %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toast = document.querySelector('.ncr-status-toast');
+  if (toast) window.setTimeout(function () { toast.remove(); }, 5000);
 });
 </script>
 {% endif %}

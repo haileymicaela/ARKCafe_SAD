@@ -96,8 +96,11 @@ def dashboard_view(request):
     # Using the shared definitions from core.models
     total_open = ncrs.filter(status__in=NcrRecord.OPEN_STATUSES).count()
     total_closed = ncrs.filter(status__in=NcrRecord.CLOSED_STATUSES).count()
+    total_counted_ncrs = total_open + total_closed
+    resolution_rate = (total_closed / total_counted_ncrs * 100) if total_counted_ncrs else 0
     
     active_users = User.objects.filter(is_active=True).count()
+    total_users = User.objects.count()
     active_projects = Project.objects.count()
 
     # Chart Data: Cause
@@ -109,11 +112,21 @@ def dashboard_view(request):
         cause_data.append({'cause': cause.title(), 'open': open_c, 'closed': closed_c})
 
     # Chart Data: Project
+    project_counts = {
+        item['project_id']: item
+        for item in ncrs.values('project_id').annotate(
+            open=Count('pk', filter=Q(status__in=NcrRecord.OPEN_STATUSES)),
+            closed=Count('pk', filter=Q(status__in=NcrRecord.CLOSED_STATUSES)),
+        )
+    }
     project_data = []
-    for proj in Project.objects.all()[:5]:
-        open_p = ncrs.filter(project=proj, status__in=NcrRecord.OPEN_STATUSES).count()
-        closed_p = ncrs.filter(project=proj, status__in=NcrRecord.CLOSED_STATUSES).count()
-        project_data.append({'project': proj.project_name, 'open': open_p, 'closed': closed_p})
+    for proj in Project.objects.order_by('project_name'):
+        counts = project_counts.get(proj.pk, {})
+        project_data.append({
+            'project': proj.project_name,
+            'open': counts.get('open', 0),
+            'closed': counts.get('closed', 0),
+        })
 
     # Recent Activity (Only for Admin)
     recent_activities = ActivityLog.objects.select_related('user').order_by('-created_at')[:5] if not is_staff else []
@@ -121,7 +134,9 @@ def dashboard_view(request):
     context = {
         'total_open': total_open,
         'total_closed': total_closed,
+        'resolution_rate': resolution_rate,
         'active_users': active_users,
+        'total_users': total_users,
         'active_projects': active_projects,
         'cause_data': cause_data,
         'project_data': project_data,

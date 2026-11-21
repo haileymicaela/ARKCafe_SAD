@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=responsive-3">
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=mobile-header-1">
 
 <div class="row mb-4 g-3 dashboard-summary-grid">
     <div class="{% if is_staff %}col-6{% else %}col-6 col-md-3{% endif %}">
@@ -15,7 +15,7 @@
         <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
             <p class="text-muted mb-1 fs-6">Total Closed NCRs</p>
             <h2 class="mb-1 fw-bold">{{ total_closed }}</h2>
-            {% if not is_staff %}<small class="text-muted">{{ total_closed|add:total_open|default:0 }} total NCRs</small>{% endif %}
+            {% if not is_staff %}<small class="text-muted">{{ resolution_rate|floatformat:1 }}% resolution rate</small>{% endif %}
         </div>
     </div>
     {% if not is_staff %}
@@ -23,7 +23,7 @@
         <div class="card shadow-sm border-0 p-3 h-100 rounded-3">
             <p class="text-muted mb-1 fs-6">Active Users</p>
             <h2 class="mb-1 fw-bold">{{ active_users }}</h2>
-            <small class="text-muted">registered accounts</small>
+            <small class="text-muted">of {{ total_users }} accounts</small>
         </div>
     </div>
     <div class="col-6 col-md-3">
@@ -37,20 +37,26 @@
 
 <div class="row g-3 dashboard-content-grid">
     <div class="{% if not is_staff %}col-12 col-lg-8{% else %}col-12{% endif %}">
-        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
+        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3 dashboard-compact-card">
             <h5 class="fw-bold mb-3">NCR Counts by Cause</h5>
             <div class="dashboard-chart" id="causeChart"></div>
         </div>
-        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3">
+        <div class="card shadow-sm border-0 mb-4 p-4 rounded-3 dashboard-compact-card dashboard-project-card">
             <h5 class="fw-bold mb-3">NCR Counts by Project</h5>
             <div class="dashboard-chart" id="projectChart"></div>
-            <div class="text-muted mt-3 small">Showing 1–{{ project_data|length }} of {{ active_projects }} Projects</div>
+            <div class="dashboard-project-pagination" id="projectPagination"{% if active_projects <= 5 %} hidden{% endif %}>
+                <span class="text-muted small" id="projectPageSummary" aria-live="polite"></span>
+                <div class="d-flex gap-2">
+                    <button type="button" class="dashboard-page-link" id="projectPagePrevious" disabled>Prev</button>
+                    <button type="button" class="dashboard-page-link dashboard-page-next" id="projectPageNext">Next</button>
+                </div>
+            </div>
         </div>
     </div>
 
     {% if not is_staff %}
     <div class="col-12 col-lg-4">
-        <div class="card shadow-sm border-0 mb-4 p-4 h-100 rounded-3">
+        <div class="card shadow-sm border-0 mb-4 p-4 h-100 rounded-3 dashboard-compact-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold mb-0">Recent Activity</h5>
                 <a href="{% url 'admin_recent_activity' %}" class="text-decoration-none text-crimson">View all</a>
@@ -82,5 +88,5 @@
 {% block extra_scripts %}
 {{ cause_data|json_script:"cause-chart-data" }}
 {{ project_data|json_script:"project-chart-data" }}
-<script src="{% static 'reports/js/dashboard_charts.js' %}?v=dashboard-svg-1" defer></script>
+<script src="{% static 'reports/js/dashboard_charts.js' %}?v=dashboard-project-pages-1" defer></script>
 {% endblock %}
