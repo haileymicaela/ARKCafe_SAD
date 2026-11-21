@@ -23,21 +23,21 @@ never roll back or break an NCR save.
 1. Create an account at <https://app.textbee.dev>, install the Android app, and
    register the phone (the device must stay online with SMS permission).
 2. Create an API key in the dashboard.
-3. Set these environment variables before starting Django:
-
-   PowerShell:
-   ```powershell
-   $env:TEXTBEE_API_KEY="your-api-key"
-   $env:TEXTBEE_DEVICE_ID="your-device-id"   # optional, uses default device
-   python manage.py runserver
-   ```
-
-   Bash:
+3. Create a `.env` file in the project root (copy `.env.example`) and fill in
+   the values. This works from any terminal or IDE without exports:
    ```bash
-   export TEXTBEE_API_KEY="your-api-key"
-   export TEXTBEE_DEVICE_ID="your-device-id"
-   python manage.py runserver
+   cp .env.example .env
    ```
+   ```ini
+   TEXTBEE_ENABLED=True
+   TEXTBEE_API_KEY=txb_your-api-key
+   TEXTBEE_DEVICE_ID=your-device-id
+   ```
+   `.env` is ignored by Git, so the key is not committed. Real environment
+   variables still take priority over `.env`.
+
+   Prefer terminal variables? Use `$env:...` in PowerShell or `export ...` in
+   Bash instead — both work the same way.
 
 4. Verify the key and device list, then send a test SMS:
    ```bash
