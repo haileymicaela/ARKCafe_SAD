@@ -2,163 +2,156 @@
 {% block extra_head %}{% include "ncr/_head.html" %}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <a href="{% url 'staff_records' %}" class="btn btn-sm btn-outline-secondary">Back</a>
-</div>
-
-<form method="post" enctype="multipart/form-data" class="ncr-card p-4">
+<form method="post" enctype="multipart/form-data" class="ncr-form-page">
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-  
-  <!-- Loop through other fields -->
-  {% for field in form %}
-    {% if field.name != 'attachments' %}
-      <div class="mb-3">
-        <label class="form-label fw-semibold">{{ field.label }}</label>
-        {{ field }}
-        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-      </div>
-    {% endif %}
-  {% endfor %}
 
-  <!-- Custom Attachments UI -->
-  <div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <label class="form-label fw-semibold mb-0">Attachments</label>
-      <span class="text-muted small">Optional</span>
-    </div>
-    
-    <!-- Drag & Drop Area -->
-    <div id="drop-area" class="drop-zone text-center p-3 mb-3">
-      <div class="mb-1">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-upload text-secondary" viewBox="0 0 16 16">
-          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-          <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-        </svg>
+  <div class="ncr-form-layout">
+    <section class="ncr-form-card ncr-fields-card">
+      <h2>NCR Details</h2>
+      <div class="ncr-form-fields">
+        <div class="ncr-form-field">
+          <label for="{{ form.project.id_for_label }}">{{ form.project.label }}{% if form.project.field.required %} <b>*</b>{% endif %}</label>
+          {{ form.project }}{% for error in form.project.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="ncr-form-field">
+          <label for="{{ form.package_no.id_for_label }}">{{ form.package_no.label }}{% if form.package_no.field.required %} <b>*</b>{% endif %}</label>
+          {{ form.package_no }}{% for error in form.package_no.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="ncr-form-field ncr-reference-field">
+          <label>Reference No.</label>
+          <input type="text" value="{{ reference_preview }}" class="form-control" readonly aria-readonly="true">
+          <small>{% if ncr %}Reference number cannot be changed{% else %}Auto-generated on save{% endif %}</small>
+        </div>
+        <div class="ncr-form-field ncr-reference-field">
+          <label for="{{ form.issued_date.id_for_label }}">{{ form.issued_date.label }}</label>
+          {{ form.issued_date }}<small>Set automatically</small>
+        </div>
+        <div class="ncr-form-field ncr-subject-field">
+          <label for="{{ form.subject.id_for_label }}">{{ form.subject.label }}{% if form.subject.field.required %} <b>*</b>{% endif %}</label>
+          {{ form.subject }}{% for error in form.subject.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </div>
+        <fieldset class="ncr-form-field ncr-cause-field">
+          <legend>{{ form.cause.label }}{% if form.cause.field.required %} <b>*</b>{% endif %}</legend>
+          <div class="ncr-cause-options">
+            {% for value, label in form.cause.field.choices %}
+            {% if value %}
+            <label class="ncr-cause-option">
+              <input type="radio" name="{{ form.cause.html_name }}" value="{{ value }}" {% if form.cause.value == value %}checked{% endif %}>
+              <span><span class="ncr-cause-copy"><strong>{{ label }}</strong><small>{% if value == 'material' %}Deviates from approved spec or unapproved equivalent{% elif value == 'workmanship' %}Finishing or punch-list defect{% else %}Surface closed before MEP trades finish{% endif %}</small></span></span>
+            </label>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% for error in form.cause.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </fieldset>
+        <div class="ncr-form-field">
+          <label for="{{ form.department.id_for_label }}">{{ form.department.label }}{% if form.department.field.required %} <b>*</b>{% endif %}</label>
+          {{ form.department }}{% for error in form.department.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="ncr-form-field">
+          <label for="{{ form.required_date.id_for_label }}">{{ form.required_date.label }}{% if form.required_date.field.required %} <b>*</b>{% endif %}</label>
+          {{ form.required_date }}{% for error in form.required_date.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </div>
       </div>
-      <p class="mb-1 small fw-semibold">Drag & drop photos or documents, or <span class="text-crimson text-decoration-underline" style="cursor:pointer;" id="browse-btn">browse</span></p>
-      <p class="text-muted mb-0" style="font-size: 12px;">JPG, PNG or PDF · up to 5 MB each</p>
-      
-      <!-- Hidden default file input -->
-      <div class="d-none">
-        {{ form.attachments }}
-      </div>
-    </div>
+    </section>
 
-    <!-- File List -->
-    <div id="file-list" class="d-flex flex-column gap-2"></div>
-    
-    {% for error in form.attachments.errors %}<div class="text-danger small mt-2">{{ error }}</div>{% endfor %}
+    <div class="ncr-form-side">
+      <section class="ncr-form-card ncr-description-card">
+        <h2>Description</h2>
+        <div class="ncr-form-field">
+          <label for="{{ form.description.id_for_label }}">{{ form.description.label }}{% if form.description.field.required %} <b>*</b>{% endif %}</label>
+          {{ form.description }}{% for error in form.description.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        </div>
+      </section>
+
+      <section class="ncr-form-card ncr-upload-card">
+        <div class="ncr-card-heading"><h2>Attachments</h2><span>Optional</span></div>
+        <label for="{{ form.attachments.id_for_label }}" id="drop-area" class="ncr-upload-zone">
+          <i class="bi bi-upload"></i>
+          <strong>Drag &amp; drop photos or documents, or <span>browse</span></strong>
+          <small>JPG, PNG, PDF, Word or Excel · up to 5 MB each</small>
+          {{ form.attachments }}
+        </label>
+        {% for error in form.attachments.errors %}<small class="ncr-field-error">{{ error }}</small>{% endfor %}
+        <div id="file-list" class="ncr-selected-files"></div>
+        {% if attachments %}
+        <div class="ncr-existing-files">
+          {% for a in attachments %}<a href="{% url 'ncr_attachment' ncr.pk a.pk %}" class="ncr-existing-file"><i class="bi bi-file-earmark"></i><span>{{ a.file_name }}</span><small>Download</small></a>{% endfor %}
+        </div>
+        {% endif %}
+      </section>
+    </div>
   </div>
-  
-  <button type="submit" class="btn btn-crimson w-100">Save NCR</button>
+
+  <div class="ncr-form-footer">
+    <span><i class="bi bi-bell"></i>{% if ncr %}Saving will update this NCR record.{% else %}The NCR will be logged with Open status and added to the audit history.{% endif %}</span>
+    <div>
+      <a href="{% if ncr %}{% url 'ncr_detail' ncr.pk %}{% else %}{% url 'staff_records' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-crimson">{% if ncr %}Save{% else %}Save NCR{% endif %}</button>
+    </div>
+  </div>
 </form>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const fileInput = document.querySelector('input[type="file"][name="attachments"]');
   const dropArea = document.getElementById('drop-area');
-  const browseBtn = document.getElementById('browse-btn');
   const fileList = document.getElementById('file-list');
-
-  // Array para panatilihin ang lahat ng files
+  if (!fileInput || !dropArea || !fileList) return;
   let allFiles = [];
-
-  // Trigger file input when clicking browse
-  browseBtn.addEventListener('click', () => fileInput.click());
-
-  // Handle Drag & Drop
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, preventDefaults, false);
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (eventName) {
+    dropArea.addEventListener(eventName, function (event) { event.preventDefault(); event.stopPropagation(); });
   });
-
-  function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
+  ['dragenter', 'dragover'].forEach(function (eventName) {
+    dropArea.addEventListener(eventName, function () { dropArea.classList.add('dragover'); });
+  });
+  ['dragleave', 'drop'].forEach(function (eventName) {
+    dropArea.addEventListener(eventName, function () { dropArea.classList.remove('dragover'); });
+  });
+  dropArea.addEventListener('drop', function (event) { addFiles(event.dataTransfer.files); });
+  fileInput.addEventListener('change', function () { addFiles(fileInput.files); });
+  function addFiles(files) {
+    Array.from(files).forEach(function (file) { allFiles.push(file); });
+    updateInput();
+    renderFiles();
   }
-
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
-  });
-
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
-  });
-
-  // Handle file drop
-  dropArea.addEventListener('drop', (e) => {
-    const dt = e.dataTransfer;
-    addFiles(dt.files);
-  });
-
-  // Handle file input change (browse)
-  fileInput.addEventListener('change', function() {
-    addFiles(this.files);
-  });
-
-  // Function to add files (append mode using array)
-  function addFiles(newFiles) {
-    // 1. I-convert ang FileList sa Array at idagdag sa allFiles
-    for (let i = 0; i < newFiles.length; i++) {
-      allFiles.push(newFiles[i]);
-    }
-    
-    // 2. I-update ang fileInput.files gamit ang DataTransfer
-    updateFileInput();
-    
-    // 3. I-render ang listahan
-    updateFileList();
+  function updateInput() {
+    const transfer = new DataTransfer();
+    allFiles.forEach(function (file) { transfer.items.add(file); });
+    fileInput.files = transfer.files;
   }
-
-  // Function to update fileInput.files based on allFiles array
-  function updateFileInput() {
-    const dt = new DataTransfer();
-    for (let i = 0; i < allFiles.length; i++) {
-      dt.items.add(allFiles[i]);
-    }
-    fileInput.files = dt.files;
+  function renderFiles() {
+    fileList.replaceChildren();
+    allFiles.forEach(function (file, index) {
+      const row = document.createElement('div');
+      row.className = 'ncr-selected-file';
+      const icon = document.createElement('i');
+      icon.className = file.type.indexOf('image/') === 0 ? 'bi bi-image' : 'bi bi-file-earmark-text';
+      const name = document.createElement('span');
+      name.className = 'ncr-selected-file-name';
+      name.textContent = file.name;
+      const size = document.createElement('small');
+      size.textContent = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      const details = document.createElement('span');
+      details.className = 'ncr-selected-file-details';
+      details.append(name, size);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'ncr-remove-file';
+      remove.setAttribute('aria-label', 'Remove ' + file.name);
+      remove.innerHTML = '<i class="bi bi-x-lg"></i>';
+      remove.addEventListener('click', function () {
+        allFiles.splice(index, 1);
+        updateInput();
+        renderFiles();
+      });
+      row.append(icon, details, remove);
+      fileList.appendChild(row);
+    });
   }
-
-  // Render File List
-  function updateFileList() {
-    fileList.innerHTML = '';
-    
-    for (let i = 0; i < allFiles.length; i++) {
-      const file = allFiles[i];
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      
-      const item = document.createElement('div');
-      item.className = 'd-flex justify-content-between align-items-center p-2 border rounded bg-white';
-      item.innerHTML = `
-        <div class="d-flex align-items-center gap-2">
-          <div class="bg-light p-2 rounded"><i class="bi bi-file-earmark-image text-secondary"></i></div>
-          <div>
-            <div class="fw-semibold small">${file.name}</div>
-            <div class="text-muted small">${sizeMB} MB</div>
-          </div>
-        </div>
-        <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="removeFile(${i})">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      `;
-      fileList.appendChild(item);
-    }
-  }
-
-  // Remove file logic
-  window.removeFile = function(index) {
-    // 1. Tanggalin ang file sa allFiles array
-    allFiles.splice(index, 1);
-    
-    // 2. I-update ang fileInput.files
-    updateFileInput();
-    
-    // 3. I-render muli
-    updateFileList();
-  };
 });
 </script>
 {% endblock %}

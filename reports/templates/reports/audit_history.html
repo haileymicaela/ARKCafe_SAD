@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=audit-mobile-4">
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=audit-status-5">
 {% endblock %}
 {% block content %}
 <form method="GET" class="audit-toolbar mb-3">
@@ -13,7 +13,7 @@
 
     <details class="audit-filter">
         <summary class="audit-action{% if status_filter or start_date or end_date %} is-active{% endif %}">
-            <i class="bi bi-sliders2" aria-hidden="true"></i> Filters
+            <i class="bi bi-funnel" aria-hidden="true"></i> Filters
             {% if status_filter or start_date or end_date %}<span class="audit-filter-count" aria-label="Filters active"></span>{% endif %}
             <i class="bi bi-chevron-down audit-control-chevron" aria-hidden="true"></i>
         </summary>
@@ -70,15 +70,15 @@
                     <td class="px-4 text-muted small">{{ log.changed_at|date:"M d, Y - g:i A" }}</td>
                     <td class="fw-semibold text-dark">{{ log.ncr.reference_no|default:"-" }}</td>
                     <td>
-                        {% if not log.old_status %}<span class="badge rounded-pill bg-light text-secondary border px-3 py-2">N/A</span>
-                        {% elif log.old_status == 'open' %}<span class="badge badge-open rounded-pill px-3 py-2">Open</span>
-                        {% elif log.old_status == 'in_progress' %}<span class="badge badge-progress rounded-pill px-3 py-2">In Progress</span>
-                        {% elif log.old_status == 'resolved' %}<span class="badge badge-resolved rounded-pill px-3 py-2">Resolved</span>{% endif %}
+                        {% if not log.old_status %}<span class="audit-status-badge status-na">N/A</span>
+                        {% elif log.old_status == 'open' %}<span class="audit-status-badge status-open"><span class="audit-status-dot"></span>Open</span>
+                        {% elif log.old_status == 'in_progress' %}<span class="audit-status-badge status-progress"><span class="audit-status-dot"></span>In Progress</span>
+                        {% elif log.old_status == 'resolved' %}<span class="audit-status-badge status-resolved"><span class="audit-status-dot"></span>Resolved</span>{% endif %}
                     </td>
                     <td>
-                        {% if log.new_status == 'open' %}<span class="badge badge-open rounded-pill px-3 py-2"><span class="dot bg-danger me-1"></span>Open</span>
-                        {% elif log.new_status == 'in_progress' %}<span class="badge badge-progress rounded-pill px-3 py-2"><span class="dot bg-warning me-1"></span>In Progress</span>
-                        {% elif log.new_status == 'resolved' %}<span class="badge badge-resolved rounded-pill px-3 py-2"><span class="dot bg-success me-1"></span>Resolved</span>{% endif %}
+                        {% if log.new_status == 'open' %}<span class="audit-status-badge status-open"><span class="audit-status-dot"></span>Open</span>
+                        {% elif log.new_status == 'in_progress' %}<span class="audit-status-badge status-progress"><span class="audit-status-dot"></span>In Progress</span>
+                        {% elif log.new_status == 'resolved' %}<span class="audit-status-badge status-resolved"><span class="audit-status-dot"></span>Resolved</span>{% endif %}
                     </td>
                     <td class="text-muted small">{{ log.user.full_name }}</td>
                     <td class="text-muted small">{{ log.remarks|default:"-" }}</td>
@@ -99,13 +99,13 @@
                 </div>
                 <div class="audit-mobile-status-flow">
                     {% if not log.old_status %}<span class="audit-mobile-status status-na">N/A</span>
-                    {% elif log.old_status == 'open' %}<span class="audit-mobile-status status-open">Open</span>
-                    {% elif log.old_status == 'in_progress' %}<span class="audit-mobile-status status-progress">In Progress</span>
-                    {% elif log.old_status == 'resolved' %}<span class="audit-mobile-status status-resolved">Resolved</span>{% endif %}
+                    {% elif log.old_status == 'open' %}<span class="audit-mobile-status status-open"><span class="audit-status-dot"></span>Open</span>
+                    {% elif log.old_status == 'in_progress' %}<span class="audit-mobile-status status-progress"><span class="audit-status-dot"></span>In Progress</span>
+                    {% elif log.old_status == 'resolved' %}<span class="audit-mobile-status status-resolved"><span class="audit-status-dot"></span>Resolved</span>{% endif %}
                     <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                    {% if log.new_status == 'open' %}<span class="audit-mobile-status status-open">Open</span>
-                    {% elif log.new_status == 'in_progress' %}<span class="audit-mobile-status status-progress">In Progress</span>
-                    {% elif log.new_status == 'resolved' %}<span class="audit-mobile-status status-resolved">Resolved</span>{% endif %}
+                    {% if log.new_status == 'open' %}<span class="audit-mobile-status status-open"><span class="audit-status-dot"></span>Open</span>
+                    {% elif log.new_status == 'in_progress' %}<span class="audit-mobile-status status-progress"><span class="audit-status-dot"></span>In Progress</span>
+                    {% elif log.new_status == 'resolved' %}<span class="audit-mobile-status status-resolved"><span class="audit-status-dot"></span>Resolved</span>{% endif %}
                 </div>
                 <p class="audit-mobile-user">By {{ log.user.full_name }}</p>
                 <p class="audit-mobile-remarks">{{ log.remarks|default:"No remarks recorded." }}</p>

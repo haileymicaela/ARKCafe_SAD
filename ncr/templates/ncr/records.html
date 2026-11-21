@@ -4,93 +4,72 @@
 {% block content %}
 {% include "ncr/_messages.html" %}
 
-<form method="get" class="ncr-card p-3 mb-3">
-  <div class="row g-2 align-items-end">
-    <div class="col-12 col-md-4">
-      <label class="form-label small text-muted mb-1">Search</label>
-      <input type="text" name="q" value="{{ filters.q }}" class="form-control" placeholder="Reference no., subject, package, project">
+<section class="ncr-records-page">
+  <form method="get" action="{% url 'staff_records' %}" class="ncr-records-filters">
+    <div class="ncr-records-toolbar">
+      <label class="search-container mb-0">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ filters.q|default:'' }}" class="form-control shadow-sm border-0" placeholder="Search by NCR no., subject, or project..." aria-label="Search NCR records">
+      </label>
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <div class="ncr-records-controls">
+        <button type="button" class="ncr-toolbar-control{% if filter_count %} is-active{% endif %}" data-bs-toggle="collapse" data-bs-target="#filterOptions" aria-expanded="{% if filter_count %}true{% else %}false{% endif %}" aria-controls="filterOptions">
+          <i class="bi bi-funnel" aria-hidden="true"></i> Filters{% if filter_count %}<span class="ncr-active-filter-count">· {{ filter_count }}</span>{% endif %} <i class="bi bi-chevron-down ncr-control-chevron" aria-hidden="true"></i>
+        </button>
+        <button type="submit" name="sort" value="{% if sort == 'newest' %}oldest{% else %}newest{% endif %}" class="ncr-toolbar-control ncr-sort-button" title="Switch to {% if sort == 'newest' %}oldest first{% else %}newest first{% endif %}">
+          {% if sort == 'newest' %}<i class="bi bi-sort-down" aria-hidden="true"></i>{% else %}<i class="bi bi-sort-up" aria-hidden="true"></i>{% endif %}
+          {% if sort == 'newest' %}Newest first{% else %}Oldest first{% endif %}
+          <i class="bi bi-chevron-down ncr-control-chevron" aria-hidden="true"></i>
+        </button>
+      </div>
+      {% for key, value in filters.items %}{% if key != 'q' and key != 'sort' and key != 'page' and key != 'status' and key != 'cause' and key != 'project' and key != 'department' and key != 'date_from' and key != 'date_to' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
     </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Status</label>
-      <select name="status" class="form-select">
-        <option value="">All</option>
-        {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Cause</label>
-      <select name="cause" class="form-select">
-        <option value="">All</option>
-        {% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Project</label>
-      <select name="project" class="form-select">
-        <option value="">All</option>
-        {% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.project_code }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label small text-muted mb-1">Department</label>
-      <select name="department" class="form-select">
-        <option value="">All</option>
-        {% for d in departments %}<option value="{{ d.pk }}" {% if filters.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.department_name }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="col-6 col-md-3">
-      <label class="form-label small text-muted mb-1">Issued from</label>
-      <input type="date" name="date_from" value="{{ filters.date_from }}" class="form-control">
-    </div>
-    <div class="col-6 col-md-3">
-      <label class="form-label small text-muted mb-1">Issued to</label>
-      <input type="date" name="date_to" value="{{ filters.date_to }}" class="form-control">
-    </div>
-    <div class="col-12 col-md-3 d-flex gap-2">
-      <button class="btn btn-crimson flex-fill" type="submit">Filter</button>
-      <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary">Reset</a>
-    </div>
-  </div>
-</form>
 
-<div class="ncr-card">
-  <div class="card-title-bar d-flex justify-content-between align-items-center">
-    <span>NCR Records <span class="text-muted fw-normal">({{ page_obj.paginator.count }})</span></span>
-    <a href="{% url 'staff_create_ncr' %}" class="btn btn-sm btn-crimson"><i class="bi bi-plus-lg me-1"></i>Create NCR</a>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-hover ncr-table">
-      <thead>
-        <tr><th>Reference No.</th><th>Subject</th><th>Project</th><th>Department</th><th>Cause</th><th>Issued</th><th>Required</th><th>Status</th><th class="text-end">Actions</th></tr>
-      </thead>
-      <tbody>
-      {% for n in page_obj %}
-        <tr>
-          <td class="fw-semibold text-nowrap"><a href="{% url 'ncr_detail' n.pk %}" class="text-decoration-none" style="color: var(--crimson-dark)">{{ n.reference_no }}</a></td>
-          <td>{{ n.subject|truncatechars:40 }}</td>
-          <td class="text-nowrap">{{ n.project.project_code }}</td>
-          <td>{{ n.department.department_name }}</td>
-          <td><span class="badge badge-cause">{{ n.get_cause_display }}</span></td>
-          <td class="text-nowrap">{{ n.issued_date|date:"M d, Y"|default:"—" }}</td>
-          <td class="text-nowrap">
-            {% if n.required_date %}
-              {% if n.required_date < today and n.status in open_statuses %}
-                <span class="text-danger fw-semibold" title="Overdue">{{ n.required_date|date:"M d, Y" }} <i class="bi bi-exclamation-circle"></i></span>
-              {% else %}{{ n.required_date|date:"M d, Y" }}{% endif %}
-            {% else %}—{% endif %}
-          </td>
-          <td><span class="badge badge-{{ n.status }}">{{ n.get_status_display }}</span></td>
-          <td class="text-end text-nowrap">
-            <a href="{% url 'ncr_detail' n.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
-            <a href="{% url 'ncr_edit' n.pk %}" class="btn btn-sm btn-outline-crimson">Edit</a>
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="9" class="text-center text-muted py-5">No NCR records found.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% include "ncr/_pagination.html" %}
-</div>
+    <div class="collapse{% if filter_count %} show{% endif %}" id="filterOptions">
+      <div class="ncr-filter-panel">
+        <div><label class="form-label" for="ncrProject">Project</label><select id="ncrProject" name="project" class="form-select"><option value="">All projects</option>{% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.project_name }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="ncrCause">Cause</label><select id="ncrCause" name="cause" class="form-select"><option value="">All causes</option>{% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="ncrStatus">Status</label><select id="ncrStatus" name="status" class="form-select"><option value="">All statuses</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="ncrDateFrom">Date raised</label><div class="ncr-date-range"><input id="ncrDateFrom" type="date" name="date_from" value="{{ filters.date_from|default:'' }}" class="form-control" aria-label="Date raised from"><span>–</span><input id="ncrDateTo" type="date" name="date_to" value="{{ filters.date_to|default:'' }}" class="form-control" aria-label="Date raised to"></div></div>
+        <div class="ncr-filter-actions"><a href="{{ clear_filters_url }}" class="btn btn-outline-secondary">Clear all</a><button type="submit" class="btn btn-crimson px-4">Apply filters</button></div>
+      </div>
+    </div>
+
+    {% if active_filters or filters.q %}
+    <div class="ncr-applied-filters">
+      <span class="ncr-result-count">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }}</span>
+      {% for active_filter in active_filters %}<a class="ncr-filter-chip" href="{{ active_filter.remove_url }}"><span>{{ active_filter.label }}: {{ active_filter.value }}</span><i class="bi bi-x-lg" aria-hidden="true"></i></a>{% endfor %}
+      {% if active_filters %}<a href="{{ clear_filters_url }}" class="ncr-clear-filters-link">Clear all</a>{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="ncr-records-card">
+      <div class="ncr-table-scroll">
+        <div class="ncr-grid-header">
+          <div>NCR No.</div><div>Subject</div><div>Project</div><div>Cause</div><div>Status</div><div>Date raised</div><div class="text-lg-end">Days open</div><div></div>
+        </div>
+        <div class="ncr-record-list">
+          {% for n in page_obj %}
+          <a href="{% url 'ncr_detail' n.pk %}" class="ncr-record-row text-decoration-none">
+            <div class="ncr-reference">{{ n.reference_no }}</div>
+            <div class="ncr-subject"><span>{{ n.subject|truncatechars:60 }}</span><small>Package {{ n.package_no|default:'—' }}</small></div>
+            <div class="ncr-project">{{ n.project.project_name }}</div>
+            <div><span class="badge badge-cause">{{ n.get_cause_display }}</span></div>
+            <div><span class="badge badge-{{ n.status }}"><span class="ncr-status-dot"></span>{{ n.get_status_display }}</span></div>
+            <div class="ncr-date">{{ n.issued_date|date:'M d, Y'|default:'—' }}</div>
+            <div class="ncr-days">{% if n.status == 'resolved' or n.days_open is None %}—{% else %}{{ n.days_open }} days{% endif %}</div>
+            <div class="ncr-row-chevron"><i class="bi bi-chevron-right"></i></div>
+          </a>
+          {% empty %}
+          <div class="ncr-empty"><i class="bi bi-inbox"></i><span>No NCR records found.</span></div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="ncr-records-footer">
+        <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs</span>
+        {% include "ncr/_pagination.html" %}
+      </div>
+    </div>
+  </form>
+</section>
 {% endblock %}

@@ -14,7 +14,7 @@
                      border:1px solid #e5e7eb; border-radius:8px; background:#fff; outline:none; }
   .ar-search input:focus { border-color:#6b0f12; }
   .ar-search .ico { position:absolute; left:12px; top:50%; transform:translateY(-50%);
-                    color:#9ca3af; font-size:13px; pointer-events:none; }
+                    color:#6b7280; font-size:13px; pointer-events:none; }
 
   .ar-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
   .ar-table { margin:0; }
@@ -70,10 +70,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
   <form method="get" class="ar-search flex-grow-1 mb-0" id="searchForm">
-    <span class="ico">&#128269;</span>
+    <i class="bi bi-search ico" aria-hidden="true"></i>
     <input type="text" name="q" value="{{ q }}" placeholder="Search by recipient name">
   </form>
-  <button type="button" class="btn btn-crimson text-nowrap" id="btnAdd">+ Add Recipient</button>
 </div>
 
 <div class="ar-card">

@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from core.decorators import admin_required
 from core.models import Department
+from core.helpers import log_activity
 
 from .forms import DepartmentForm
 
@@ -27,6 +28,8 @@ def admin_departments(request):
 
             if add_form.is_valid():
                 dept = add_form.save()
+                log_activity(request.user, "create", "department", dept.pk,
+                             dept.department_name)
 
                 messages.success(
                     request,
@@ -56,7 +59,12 @@ def admin_departments(request):
             )
 
             if rename_form.is_valid():
+                old_name = dept.department_name
                 rename_form.save()
+                if old_name != dept.department_name:
+                    log_activity(request.user, "rename", "department", dept.pk,
+                                 dept.department_name, old_value=old_name,
+                                 new_value=dept.department_name)
 
                 messages.success(
                     request,
@@ -85,6 +93,8 @@ def admin_departments(request):
 
             try:
                 dept.delete()
+                log_activity(request.user, "delete", "department", dept.pk,
+                             department_name)
 
                 messages.success(
                     request,

@@ -34,6 +34,11 @@ def _next_reference(year):
     return f"{prefix}{highest + 1:04d}"
 
 
+def reference_preview():
+    """Return the next likely reference for display before the record is saved."""
+    return _next_reference(timezone.localdate().year)
+
+
 def save_attachments(ncr, files):
     for f in files:
         name = os.path.basename(f.name)[:255]
@@ -81,7 +86,7 @@ def update_ncr(form, user):
 
 
 @transaction.atomic
-def change_status(ncr, user, new_status, resolution_type="", resolution_note="", remarks=""):
+def change_status(ncr, user, new_status, resolution_type="", resolution_note="", remarks="", resolve_date=None):
     old = ncr.status
     if new_status not in allowed_next(old):
         raise ValueError(f"Cannot change {old} -> {new_status}")
@@ -89,7 +94,7 @@ def change_status(ncr, user, new_status, resolution_type="", resolution_note="",
     if new_status == NcrRecord.STATUS_RESOLVED:
         ncr.resolution_type = resolution_type
         ncr.resolution_note = resolution_note
-        ncr.resolve_date = timezone.localdate()
+        ncr.resolve_date = resolve_date or timezone.localdate()
     elif old == NcrRecord.STATUS_RESOLVED:  # reopening
         previous = ncr.get_resolution_type_display()
         if previous:

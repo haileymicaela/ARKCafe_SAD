@@ -13,6 +13,22 @@
   .btn-check:checked + .btn-status { background: var(--crimson-dark); color: #fff; }
   .warn-icon { width: 48px; height: 48px; border-radius: 50%; background: #F3C9CC; color: var(--crimson-dark); font-size: 22px; font-weight: 700; }
   .info-box { background: #F5F4F4; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text-muted); text-align: left; }
+  .users-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .users-search { position:relative; display:flex; flex:1 1 auto; min-width:180px; align-items:center; }
+  .users-search > i { position:absolute; left:14px; z-index:1; color:#6b7280; font-size:14px; }
+  .users-search .form-control { height:38px; padding-left:38px; border-color:#d5d2d2; border-radius:8px; font-size:12px; }
+  .users-filter-select { position:relative; flex:0 0 auto; }
+  .users-filter-select.role { width:104px; }
+  .users-filter-select.status { width:114px; }
+  .users-filter-select.sort { width:136px; }
+  .users-filter-select > i:first-child { position:absolute; top:50%; left:11px; z-index:1; color:#555; font-size:13px; transform:translateY(-50%); pointer-events:none; }
+  .users-filter-select > i:last-child { position:absolute; top:50%; right:10px; color:#333; font-size:10px; transform:translateY(-50%); pointer-events:none; }
+  .users-filter-select .form-select { height:38px; padding:6px 25px 6px 31px; border-color:#d5d2d2; border-radius:8px; background-image:none; color:#252525; font-size:11px; font-weight:600; cursor:pointer; }
+  @media (max-width:700px) {
+    .users-toolbar { flex-wrap:wrap; }
+    .users-search { flex-basis:100%; }
+    .users-filter-select { flex:1 1 30%; width:auto !important; }
+  }
 </style>
 {% endblock %}
 
@@ -23,33 +39,35 @@
      data-reset-id="{{ reset_target.user_id|default:'' }}"
      data-reset-name="{{ reset_target.full_name|default:'' }}"></div>
 
-<!-- Add user -->
-<div class="d-flex justify-content-end mb-3">
-  <button type="button" class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#addModal">
-    <i class="bi bi-plus-lg me-1"></i> Add User
-  </button>
-</div>
-
 <!-- Search + filters -->
-<form method="get" class="d-flex flex-wrap gap-2 mb-3">
-  <div class="input-group flex-grow-1" style="min-width: 220px;">
-    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-    <input type="search" name="q" value="{{ q }}" class="form-control border-start-0"
-           placeholder="Search by Name or email...">
+<form method="get" class="users-toolbar">
+  <label class="users-search">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <input type="search" name="q" value="{{ q }}" class="form-control"
+           placeholder="Search by Name or email..." aria-label="Search users by name or email">
+  </label>
+  <div class="users-filter-select role">
+    <i class="bi bi-sort-down" aria-hidden="true"></i>
+    <select name="role" class="form-select" data-autosubmit aria-label="Filter by role">
+      <option value="" {% if not role %}selected{% endif %}>Role</option>
+      {% for value, label in roles %}<option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select><i class="bi bi-chevron-down" aria-hidden="true"></i>
   </div>
-  <select name="role" class="form-select w-auto" data-autosubmit>
-    <option value="">All roles</option>
-    {% for value, label in roles %}<option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-  </select>
-  <select name="status" class="form-select w-auto" data-autosubmit>
-    <option value="">All statuses</option>
-    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
-    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
-  </select>
-  <select name="sort" class="form-select w-auto" data-autosubmit>
-    <option value="name_asc" {% if sort != 'name_desc' %}selected{% endif %}>Name A-Z</option>
-    <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
-  </select>
+  <div class="users-filter-select status">
+    <i class="bi bi-sort-down" aria-hidden="true"></i>
+    <select name="status" class="form-select" data-autosubmit aria-label="Filter by status">
+      <option value="" {% if not status %}selected{% endif %}>Status</option>
+      <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+    </select><i class="bi bi-chevron-down" aria-hidden="true"></i>
+  </div>
+  <div class="users-filter-select sort">
+    <i class="bi bi-sort-down" aria-hidden="true"></i>
+    <select name="sort" class="form-select" data-autosubmit aria-label="Sort users by name">
+      <option value="name_asc" {% if sort != 'name_desc' %}selected{% endif %}>Name A-Z</option>
+      <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
+    </select><i class="bi bi-chevron-down" aria-hidden="true"></i>
+  </div>
 </form>
 
 <!-- Table -->

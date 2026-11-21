@@ -6,24 +6,10 @@ and delete the temporary fallbacks.
 """
 import logging
 
-from core.models import ActivityLog, Recipient
+from core.helpers import log_activity
+from core.models import Recipient
 
 logger = logging.getLogger(__name__)
-
-try:
-    from core.helpers import log_activity  # noqa: F401  <- adjust module path
-except ImportError:  # TEMPORARY fallback until the shared helper exists
-    def log_activity(user, action_type, entity_type, entity_id,
-                     entity_label="", old_value="", new_value=""):
-        ActivityLog.objects.create(
-            user=user,
-            action_type=action_type[:30],
-            entity_type=entity_type[:30],
-            entity_id=entity_id,
-            entity_label=entity_label[:150],
-            old_value=old_value[:255],
-            new_value=new_value[:255],
-        )
 
 # --- SMS TEMPORARILY DISABLED FOR PART 1 (NCR) ---
 # try:

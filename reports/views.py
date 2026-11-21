@@ -343,9 +343,13 @@ def export_ncr_view(request):
         return response
 
     queryset = NcrRecord.objects.select_related('project').order_by('-issued_date', '-ncr_id')
+    selected_ncr_id = request.GET.get('single_ncr', '')
+    if not selected_ncr_id.isdecimal() or not queryset.filter(pk=selected_ncr_id).exists():
+        selected_ncr_id = ''
     return render(request, 'reports/export_ncr.html', {
         'projects': Project.objects.order_by('project_name'),
         'ncrs': queryset,
+        'selected_ncr_id': selected_ncr_id,
         'total_records': queryset.count(),
         'today': timezone.localdate(),
         'cause_choices': NcrRecord.CAUSE_CHOICES,

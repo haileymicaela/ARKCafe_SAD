@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from core.models import Project
+from core.helpers import log_activity
 from .project_forms import ProjectForm
 
 
@@ -78,6 +79,8 @@ def project_add(request):
     form = ProjectForm(request.POST)
     if form.is_valid():
         p = form.save()
+        log_activity(request.user, "create", "project", p.pk, p.project_name,
+                     new_value=p.project_code)
         messages.success(request, f"Project {p.project_code} added.")
         return redirect("project_list")
     return _render_list(request, form, "Add Project", request.path)
@@ -89,7 +92,14 @@ def project_edit(request, pk):
     project = get_object_or_404(Project, pk=pk)
     form = ProjectForm(request.POST, instance=project)
     if form.is_valid():
+        old_name = project.project_name
+        old_code = project.project_code
         form.save()
+        changed = ", ".join(form.changed_data)
+        if changed:
+            log_activity(request.user, "update", "project", project.pk, project.project_name,
+                         old_value=f"{old_name} ({old_code})",
+                         new_value=f"{project.project_name} ({project.project_code}; {changed})")
         messages.success(request, "Project updated.")
         return redirect("project_list")
     return _render_list(request, form, "Edit Project", request.path)
@@ -108,6 +118,8 @@ def project_delete(request, pk):
         return redirect("project_list")
     try:
         project.delete()
+        log_activity(request.user, "delete", "project", project.pk, project.project_name,
+                     old_value=project.project_code)
         messages.success(request, "Project deleted.")
     except ProtectedError:
         messages.error(
