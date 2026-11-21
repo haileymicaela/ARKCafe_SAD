@@ -248,9 +248,9 @@ e2e_staff = [
              "pm.test('Staff-only shell rendered (staff sidebar link)', () =>",
              "  pm.expect(pm.response.text()).to.include('/staff-create/'));",
          ]),
-    item("4. Browse records - capture project & department IDs", "GET", "/staff-records/",
+    item("4. Open create form - capture project & department IDs", "GET", "/staff-create/",
          tests=[
-             "pm.test('Records page 200', () => pm.expect(pm.response.code).to.eql(200));",
+             "pm.test('Create form 200', () => pm.expect(pm.response.code).to.eql(200));",
              "const body = pm.response.text();",
              "const pSel = body.match(/name=\"project\"[\\s\\S]*?<\\/select>/);",
              "const pOpt = pSel && pSel[0].match(/<option value=\"(\\d+)\"/);",

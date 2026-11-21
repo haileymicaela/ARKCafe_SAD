@@ -29,7 +29,7 @@ class Project(models.Model):
 
 class Recipient(models.Model):
     recipient_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=150)
     mobile_number = models.CharField(max_length=20)
     department = models.ForeignKey(
         Department, on_delete=models.PROTECT, db_column="department_id"

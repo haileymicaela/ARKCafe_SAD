@@ -1,3 +1,0 @@
-$kind: collection
-description: End-to-end testing = whole user journeys across the UI endpoints in role order, with assertions at every step.
-order: 4000

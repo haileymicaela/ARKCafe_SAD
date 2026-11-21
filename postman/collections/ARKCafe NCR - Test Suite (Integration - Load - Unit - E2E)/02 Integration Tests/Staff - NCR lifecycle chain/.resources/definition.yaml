@@ -1,3 +1,0 @@
-$kind: collection
-description: "Full NCR lifecycle: create -> status transitions -> edit -> search -> export."
-order: 5000

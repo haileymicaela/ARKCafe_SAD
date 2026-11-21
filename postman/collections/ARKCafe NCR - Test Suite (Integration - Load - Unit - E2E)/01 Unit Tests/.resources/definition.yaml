@@ -1,3 +1,0 @@
-$kind: collection
-description: Unit testing with Postman = assertions on individual requests (Scripts > Test tab). Each scenario manages its own session so it can run standalone or as part of a collection run.
-order: 2000
