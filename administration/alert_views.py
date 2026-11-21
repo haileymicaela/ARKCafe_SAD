@@ -3,8 +3,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .alert_forms import AlertRecipientForm
-from .models import AlertRecipient
 from core.helpers import log_activity
+from core.models import Recipient
 
 # Match the template folder you used for projects.html
 TEMPLATE = "administration/alert_recipients.html"
@@ -15,7 +15,7 @@ TEMPLATE = "administration/alert_recipients.html"
 
 def _render(request, form=None, modal_title=None, modal_action=None, status=200):
     q = request.GET.get("q", "").strip()
-    qs = AlertRecipient.objects.select_related("department")
+    qs = Recipient.objects.select_related("department").order_by("recipient_id")
     if q:
         qs = qs.filter(name__icontains=q)
 
@@ -59,7 +59,7 @@ def recipient_add(request):
 
 @login_required
 def recipient_edit(request, pk):
-    obj = get_object_or_404(AlertRecipient, pk=pk)
+    obj = get_object_or_404(Recipient, pk=pk)
     if request.method != "POST":
         return redirect("alert_recipients")
 
@@ -79,9 +79,10 @@ def recipient_edit(request, pk):
 @login_required
 @require_POST
 def recipient_delete(request, pk):
-    obj = get_object_or_404(AlertRecipient, pk=pk)
+    obj = get_object_or_404(Recipient, pk=pk)
+    recipient_id = obj.pk
     name = obj.name
     obj.delete()
-    log_activity(request.user, "delete", "recipient", obj.pk, name)
+    log_activity(request.user, "delete", "recipient", recipient_id, name)
     _flash(request, "Recipient removed", f"{name} was removed successfully")
     return redirect("alert_recipients")

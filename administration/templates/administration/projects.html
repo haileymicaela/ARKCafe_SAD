@@ -11,7 +11,7 @@
 
   .proj-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
   .proj-table { margin:0; }
-  .proj-table th { font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+  .proj-table th { font-size:14px; letter-spacing:.04em; text-transform:uppercase;
                    color:#6b7280; font-weight:600; padding:12px 16px; background:#fff;
                    border-bottom:1px solid #e5e7eb; }
   .proj-table td { padding:14px 16px; font-size:13px; vertical-align:middle;
@@ -87,7 +87,7 @@
       <thead>
         <tr>
           <th>Project Code</th><th>Project Name</th><th>Client Name</th>
-          <th>Description</th><th class="text-end">Actions</th>
+          <th>Description</th><th class="admin-actions-header">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -97,7 +97,8 @@
           <td class="proj-name">{{ p.project_name }}</td>
           <td>{{ p.client_name }}</td>
           <td class="proj-muted">{{ p.description|default:"—"|truncatechars:60 }}</td>
-          <td class="text-end text-nowrap">
+          <td class="admin-actions-cell">
+            <div class="admin-actions-group">
             <button type="button" class="btn-act btn-edit"
                     data-action="{% url 'project_edit' p.pk %}"
                     data-project_code="{{ p.project_code }}"
@@ -109,6 +110,7 @@
                     data-code="{{ p.project_code }}"
                     data-name="{{ p.project_name }}"
                     data-ncrs="{{ p.ncr_count }}">Delete</button>
+            </div>
           </td>
         </tr>
         {% empty %}

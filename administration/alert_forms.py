@@ -1,17 +1,23 @@
 from django import forms
+from django.core.validators import RegexValidator
 
-from .models import AlertRecipient
+from core.models import Recipient
 
 
 class AlertRecipientForm(forms.ModelForm):
+    mobile_number = forms.CharField(
+        max_length=20,
+        validators=[RegexValidator(r"^\d{11}$", "Enter an 11-digit mobile number.")],
+        widget=forms.TextInput(
+            attrs={"placeholder": "09XXXXXXXXX", "inputmode": "numeric", "maxlength": "11"}
+        ),
+    )
+
     class Meta:
-        model = AlertRecipient
+        model = Recipient
         fields = ["name", "mobile_number", "department"]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": "Enter recipient name"}),
-            "mobile_number": forms.TextInput(
-                attrs={"placeholder": "09XXXXXXXXX", "inputmode": "numeric", "maxlength": "11"}
-            ),
         }
 
     def __init__(self, *args, **kwargs):

@@ -41,7 +41,7 @@
   }
 
   .dept-table th {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-muted);
   }
@@ -105,7 +105,7 @@
         <tr>
           <th class="ps-4">Department</th>
           <th>Recipients</th>
-          <th class="text-end pe-4">Action</th>
+          <th class="admin-actions-header">Action</th>
         </tr>
       </thead>
 
@@ -121,7 +121,8 @@
             {{ d.recipient_count }}
           </td>
 
-          <td class="text-end pe-4">
+          <td class="admin-actions-cell">
+            <div class="admin-actions-group">
 
             <!-- Rename Button -->
             <button
@@ -146,6 +147,7 @@
             >
               Delete
             </button>
+            </div>
 
           </td>
         </tr>

@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --sidebar-width: 260px;
-    --crimson-dark: #68161D;
-    --crimson-light: #8E252D;
+    --sidebar-width: 211px;
+    --sidebar-maroon: #620C0D;
+    --sidebar-maroon-hover: #8E252D;
     --bg-color: #F4F5F7;
     --text-muted: #6B7280;
     --text-dark: #111827;
@@ -25,7 +25,7 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    background-color: var(--crimson-dark);
+    background-color: var(--sidebar-maroon);
     color: #ffffff;
     z-index: 1050; /* Higher than overlay */
     display: flex;
@@ -48,70 +48,72 @@ body {
 }
 
 .sidebar-brand {
-    padding: 24px 24px;
+    padding: 24px 22px 20px;
     display: flex;
     flex-direction: column;
 }
 
 .sidebar-brand .logo-text {
     font-size: 24px;
+    line-height: 1.15;
     font-weight: 700;
     letter-spacing: -0.5px;
     margin-bottom: 2px;
 }
 
 .sidebar-brand .system-name {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .sidebar-nav {
     flex-grow: 1;
-    padding: 10px 0;
+    padding: 9px 0;
 }
 
 .nav-link {
     color: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
-    padding: 12px 24px;
-    margin: 4px 12px;
+    padding: 8px 10px;
+    margin: 2px 15px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-    background-color: var(--crimson-light);
+    background-color: var(--sidebar-maroon-hover);
     color: #ffffff;
 }
 
 .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.16);
     color: #ffffff;
     font-weight: 600;
 }
 
 .nav-link i {
-    font-size: 18px;
-    margin-right: 14px;
-    width: 20px;
+    font-size: 15px;
+    margin-right: 10px;
+    width: 15px;
     text-align: center;
 }
 
 /* Bottom logout section */
 .sidebar-footer {
-    padding: 24px;
+    padding: 14px 15px 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-footer .nav-link {
     margin: 0;
     padding: 0;
+    font-size: 13px;
     color: rgba(255, 255, 255, 0.8);
 }
 
@@ -163,7 +165,7 @@ body {
     height: 32px;
     flex: 0 0 auto;
     border-radius: 50%;
-    background-color: var(--crimson-dark);
+    background-color: var(--sidebar-maroon);
     color: white;
     display: flex;
     align-items: center;
@@ -250,12 +252,12 @@ body {
     /* The mobile header has its own compact brand/back label. Never render the
        desktop breadcrumb beside it at the same time. */
     body.reports-responsive .topbar > nav { display: none !important; }
-    body.reports-responsive .topbar > .mobile-brand { flex: 0 1 auto; min-width: 0; white-space: nowrap; color: var(--crimson-dark) !important; text-decoration: none !important; }
+    body.reports-responsive .topbar > .mobile-brand { flex: 0 1 auto; min-width: 0; white-space: nowrap; color: var(--sidebar-maroon) !important; text-decoration: none !important; }
     body.reports-responsive .topbar > .mobile-brand-back { overflow: hidden; text-overflow: ellipsis; }
-    body.reports-responsive .topbar #sidebarToggle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 24px; margin-right: 0 !important; padding: 0; color: var(--crimson-dark); }
+    body.reports-responsive .topbar #sidebarToggle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 24px; margin-right: 0 !important; padding: 0; color: var(--sidebar-maroon); }
     body.reports-responsive .topbar #sidebarToggle i { font-size: 16px !important; }
-    body.reports-responsive .mobile-brand { display: inline-flex; align-items: center; gap: 6px; color: var(--crimson-dark); text-decoration: none; font-size: 14px; font-weight: 700; }
-    body.reports-responsive .mobile-brand:hover { color: var(--crimson-dark); }
+    body.reports-responsive .mobile-brand { display: inline-flex; align-items: center; gap: 6px; color: var(--sidebar-maroon); text-decoration: none; font-size: 14px; font-weight: 700; }
+    body.reports-responsive .mobile-brand:hover { color: var(--sidebar-maroon); }
     body.reports-responsive .mobile-brand > i { font-size: 12px; }
     body.reports-responsive .mobile-brand-back { font-size: 12px; font-weight: 600; }
     body.reports-responsive .topbar-right { gap: 6px; }

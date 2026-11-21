@@ -1,0 +1,17 @@
+.admin-actions-header,
+.admin-actions-cell {
+    padding-right: 16px !important;
+    text-align: left !important;
+    white-space: nowrap;
+}
+
+.admin-actions-header {
+    width: 1%;
+}
+
+.admin-actions-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+}

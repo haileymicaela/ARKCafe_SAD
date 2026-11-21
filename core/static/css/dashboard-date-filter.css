@@ -1,6 +1,7 @@
 /* Dashboard date range picker, based on the prototype. */
 .dashboard-time-filter { position: relative; z-index: 20; }
 .dashboard-time-filter > summary { list-style: none; cursor: pointer; }
+.dashboard-time-filter > summary:hover { color: #374151 !important; background-color: #f1f1f1 !important; border-color: #d1d5db !important; }
 .dashboard-time-filter > summary::-webkit-details-marker { display: none; }
 .dashboard-time-menu { position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; width: min(560px, calc(100vw - 20px)); overflow: hidden; background: #fff; border: 1px solid #e6e3e5; border-radius: 10px; box-shadow: 0 12px 32px #211a1a26; }
 .dashboard-date-form { display: grid; grid-template-columns: 120px minmax(0, 1fr); }
@@ -49,7 +50,7 @@
     .dashboard-preset-column, .dashboard-calendar-area, .dashboard-date-actions { display: none; }
     .dashboard-mobile-sheet { display: grid; gap: 1px; padding: 9px 12px 16px; }
     .dashboard-sheet-handle { width: 38px; height: 4px; justify-self: center; margin: 0 0 7px; background: #d9d6da; border-radius: 4px; }
-    .dashboard-mobile-sheet h2 { margin: 0 0 5px; color: #29262c; font-size: 14px; font-weight: 700; }
+    .dashboard-mobile-sheet h2 { margin: 0 0 5px; color: #29262c; font-size: 16px; font-weight: 700; }
     .dashboard-mobile-preset { width: 100%; min-height: 38px; padding: 0 9px; color: #2f2c32; background: #fff; border: 0; border-radius: 6px; text-align: left; font-size: 12px; }
     .dashboard-mobile-preset.is-selected { color: #68161d; background: #f6e9ea; font-weight: 600; }
     .dashboard-mobile-custom-range { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 7px; padding: 10px 0 2px; }
