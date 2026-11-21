@@ -148,5 +148,6 @@
   }
   document.getElementById('modal-close').addEventListener('click', closeModal);
   modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
-  updateSummary();
+  if (pdfSelect.value) setTab('pdf');
+  else updateSummary();
 })();

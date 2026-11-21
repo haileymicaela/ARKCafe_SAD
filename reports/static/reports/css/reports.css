@@ -3,9 +3,15 @@
 .text-crimson { color: #68161D; font-weight: 600; }
 
 /* Custom Status Badges */
-.badge-open { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
-.badge-progress { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
-.badge-resolved { background-color: rgba(25, 135, 84, 0.1); color: #19875e; }
+.badge-open { background-color: #fef2f2; color: #ef4444; }
+.badge-progress { background-color: #fffbeb; color: #d97706; }
+.badge-resolved { background-color: #f0fdf4; color: #16a34a; }
+.audit-status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 20px; font-size: 10px; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.audit-status-dot { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: currentColor; }
+.audit-status-badge.status-na { color: #6b7280; background: #f3f4f6; }
+.audit-status-badge.status-open, .audit-mobile-status.status-open { color: #ef4444; background: #fef2f2; }
+.audit-status-badge.status-progress, .audit-mobile-status.status-progress { color: #d97706; background: #fffbeb; }
+.audit-status-badge.status-resolved, .audit-mobile-status.status-resolved { color: #16a34a; background: #f0fdf4; }
 
 .table-hover tbody tr:hover { background-color: #f8f9fa; }
 
@@ -138,10 +144,7 @@
     .audit-mobile-card-heading time { flex: 0 0 auto; color: #8a858d; text-align: right; font-size: 10px; }
     .audit-mobile-status-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 8px 0 7px; }
     .audit-mobile-status { display: inline-flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 20px; font-size: 10px; font-weight: 600; }
-    .audit-mobile-status.status-na { color: #77767d; background: #f0eff1; }
-    .audit-mobile-status.status-open { color: #bb3541; background: #fcebed; }
-    .audit-mobile-status.status-progress { color: #9a7010; background: #fff3d4; }
-    .audit-mobile-status.status-resolved { color: #26794f; background: #e8f5ed; }
+    .audit-mobile-status.status-na { color: #6b7280; background: #f3f4f6; }
     .audit-mobile-status-flow > i { color: #89858d; font-size: 11px; }
     .audit-mobile-user, .audit-mobile-remarks { min-width: 0; margin: 0; color: #77737a; font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; }
     .audit-mobile-remarks { overflow-wrap: anywhere; }

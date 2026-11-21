@@ -43,16 +43,26 @@ def staff_records(request):
         )
 
     # Status filter
-    if g.get("status") in dict(NcrRecord.STATUS_CHOICES):
-        qs = qs.filter(status=g["status"])
+    active_filters = []
+    status_labels = dict(NcrRecord.STATUS_CHOICES)
+    status_value = g.get("status")
+    if status_value in status_labels:
+        qs = qs.filter(status=status_value)
+        active_filters.append({"label": "Status", "value": status_labels[status_value], "key": "status"})
 
     # Cause filter
-    if g.get("cause") in dict(NcrRecord.CAUSE_CHOICES):
-        qs = qs.filter(cause=g["cause"])
+    cause_labels = dict(NcrRecord.CAUSE_CHOICES)
+    cause_value = g.get("cause")
+    if cause_value in cause_labels:
+        qs = qs.filter(cause=cause_value)
+        active_filters.append({"label": "Cause", "value": cause_labels[cause_value], "key": "cause"})
 
     # Project filter
     if (g.get("project") or "").isdigit():
-        qs = qs.filter(project_id=int(g["project"]))
+        project = Project.objects.filter(pk=int(g["project"])).first()
+        if project:
+            qs = qs.filter(project_id=project.pk)
+            active_filters.append({"label": "Project", "value": project.project_name, "key": "project"})
 
     # Department filter
     if (g.get("department") or "").isdigit():
@@ -67,15 +77,33 @@ def staff_records(request):
 
         if value:
             try:
+                parsed_date = timezone.datetime.fromisoformat(value).date()
                 qs = qs.filter(
-                    **{
-                        lookup: timezone.datetime.fromisoformat(
-                            value
-                        ).date()
-                    }
+                    **{lookup: parsed_date}
                 )
             except ValueError:
                 pass
+
+    date_from = None
+    date_to = None
+    try:
+        if g.get("date_from"):
+            date_from = timezone.datetime.fromisoformat(g["date_from"]).date()
+    except ValueError:
+        pass
+    try:
+        if g.get("date_to"):
+            date_to = timezone.datetime.fromisoformat(g["date_to"]).date()
+    except ValueError:
+        pass
+    if date_from or date_to:
+        if date_from and date_to:
+            date_label = f"{date_from:%b %d} – {date_to:%b %d, %Y}"
+        elif date_from:
+            date_label = f"From {date_from:%b %d, %Y}"
+        else:
+            date_label = f"Through {date_to:%b %d, %Y}"
+        active_filters.append({"label": "Date", "value": date_label, "key": "date"})
 
     # Sorting
     sort = g.get("sort", "newest")
@@ -106,11 +134,30 @@ def staff_records(request):
     # Preserve query parameters for pagination
     params = g.copy()
     params.pop("page", None)
+    clear_params = g.copy()
+    for key in list(clear_params.keys()):
+        if key not in ("q", "sort"):
+            clear_params.pop(key, None)
+    if q:
+        clear_params["q"] = q
+    clear_params["sort"] = sort
+    for active_filter in active_filters:
+        remove_params = g.copy()
+        remove_params.pop("page", None)
+        if active_filter["key"] == "date":
+            remove_params.pop("date_from", None)
+            remove_params.pop("date_to", None)
+        else:
+            remove_params.pop(active_filter["key"], None)
+        active_filter["remove_url"] = "?" + remove_params.urlencode() if remove_params else "?sort=" + sort
 
     return render(request, "ncr/records.html", {
         "page_obj": page,
         "querystring": params.urlencode(),
         "filters": g,
+        "active_filters": active_filters,
+        "filter_count": len(active_filters),
+        "clear_filters_url": "?" + clear_params.urlencode(),
         "sort": sort,
         "today": today,
         "open_statuses": NcrRecord.OPEN_STATUSES,
@@ -132,12 +179,7 @@ def staff_create_ncr(request):
 
         if form.is_valid():
             ncr = services.create_ncr(form, request.user)
-
-            messages.success(
-                request,
-                f"{ncr.reference_no} was created successfully",
-                extra_tags="NCR created"
-            )
+            request.session["ncr_save_feedback"] = {"kind": "created", "ncr_id": ncr.pk}
 
             return redirect("ncr_detail", pk=ncr.pk)
 
@@ -146,7 +188,8 @@ def staff_create_ncr(request):
 
     return render(request, "ncr/ncr_form.html", {
         "form": form,
-        "ncr": None
+        "ncr": None,
+        "reference_preview": services.reference_preview(),
     })
 
 
@@ -164,6 +207,11 @@ def ncr_detail(request, pk):
         ),
         pk=pk
     )
+    save_feedback = request.session.get("ncr_save_feedback")
+    if save_feedback and save_feedback.get("ncr_id") == ncr.pk:
+        request.session.pop("ncr_save_feedback", None)
+    else:
+        save_feedback = None
 
     if request.method == "POST":
         status_form = StatusUpdateForm(request.POST, ncr=ncr)
@@ -178,6 +226,7 @@ def ncr_detail(request, pk):
                 d["resolution_type"],
                 d["resolution_note"],
                 d["remarks"],
+                d["resolve_date"],
             )
 
             messages.success(
@@ -202,6 +251,7 @@ def ncr_detail(request, pk):
         ).order_by("-changed_at", "-history_id"),
         "today": timezone.localdate(),
         "open_statuses": NcrRecord.OPEN_STATUSES,
+        "save_feedback": save_feedback,
     })
 
 
@@ -222,12 +272,7 @@ def ncr_edit(request, pk):
 
         if form.is_valid():
             services.update_ncr(form, request.user)
-
-            messages.success(
-                request,
-                "Your edit was saved successfully",
-                extra_tags="NCR updated"
-            )
+            request.session["ncr_save_feedback"] = {"kind": "updated", "ncr_id": ncr.pk}
 
             return redirect("ncr_detail", pk=ncr.pk)
 
@@ -237,6 +282,7 @@ def ncr_edit(request, pk):
     return render(request, "ncr/ncr_form.html", {
         "form": form,
         "ncr": ncr,
+        "reference_preview": ncr.reference_no,
         "attachments": ncr.attachments.defer(
             "file_data"
         ).order_by("uploaded_at"),

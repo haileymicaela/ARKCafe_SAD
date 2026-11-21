@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Count, Q
 from django.db.models.functions import Lower
 from django.db.models.deletion import ProtectedError
@@ -122,10 +123,13 @@ def admin_users(request):
                     )
                 else:
                     name = target.full_name
+                    target_id = target.pk
+                    email = target.email
                     try:
-                        target.delete()
-                        log_activity(request.user, "delete", "user", target.pk, name,
-                                     old_value=target.email)
+                        with transaction.atomic():
+                            log_activity(request.user, "delete", "user", target_id, name,
+                                         old_value=email)
+                            target.delete()
                         messages.success(request, f"Account deleted for {name}")
                     except ProtectedError:
                         messages.error(

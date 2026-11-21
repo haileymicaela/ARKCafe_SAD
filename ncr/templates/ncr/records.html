@@ -1,160 +1,75 @@
-a{% extends "base.html" %}
+{% extends "base.html" %}
 {% block extra_head %}{% include "ncr/_head.html" %}{% endblock %}
 
 {% block content %}
 {% include "ncr/_messages.html" %}
 
-<div class="container-fluid py-3 px-4">
-  
-  <!-- Top Action Bar (Filters, Search, Sort, at Buttons) -->
-  <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
-    
-    <!-- Filters Button -->
-    <button type="button" class="btn btn-outline-secondary bg-white d-flex align-items-center gap-2 px-3 py-2" data-bs-toggle="collapse" data-bs-target="#filterOptions">
-      <i class="bi bi-funnel"></i> Filters
-    </button>
-    
-    <!-- Search Input -->
-    <div class="search-container">
-      <i class="bi bi-search position-absolute text-muted"></i>
-      <input type="text" name="q" value="{{ filters.q }}" class="form-control py-2 shadow-sm border-0" placeholder="Search by NCR no., subject, or project...">
+<section class="ncr-records-page">
+  <form method="get" action="{% url 'staff_records' %}" class="ncr-records-filters">
+    <div class="ncr-records-toolbar">
+      <label class="search-container mb-0">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ filters.q|default:'' }}" class="form-control shadow-sm border-0" placeholder="Search by NCR no., subject, or project..." aria-label="Search NCR records">
+      </label>
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <div class="ncr-records-controls">
+        <button type="button" class="ncr-toolbar-control{% if filter_count %} is-active{% endif %}" data-bs-toggle="collapse" data-bs-target="#filterOptions" aria-expanded="{% if filter_count %}true{% else %}false{% endif %}" aria-controls="filterOptions">
+          <i class="bi bi-funnel" aria-hidden="true"></i> Filters{% if filter_count %}<span class="ncr-active-filter-count">· {{ filter_count }}</span>{% endif %} <i class="bi bi-chevron-down ncr-control-chevron" aria-hidden="true"></i>
+        </button>
+        <button type="submit" name="sort" value="{% if sort == 'newest' %}oldest{% else %}newest{% endif %}" class="ncr-toolbar-control ncr-sort-button" title="Switch to {% if sort == 'newest' %}oldest first{% else %}newest first{% endif %}">
+          {% if sort == 'newest' %}<i class="bi bi-sort-down" aria-hidden="true"></i>{% else %}<i class="bi bi-sort-up" aria-hidden="true"></i>{% endif %}
+          {% if sort == 'newest' %}Newest first{% else %}Oldest first{% endif %}
+          <i class="bi bi-chevron-down ncr-control-chevron" aria-hidden="true"></i>
+        </button>
+      </div>
+      {% for key, value in filters.items %}{% if key != 'q' and key != 'sort' and key != 'page' and key != 'status' and key != 'cause' and key != 'project' and key != 'department' and key != 'date_from' and key != 'date_to' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
     </div>
 
-    <!-- Sort Dropdown -->
-    <select name="sort" class="form-select py-2 shadow-sm border-0" style="width: auto;">
-      <option value="newest">Newest first</option>
-      <option value="oldest">Oldest first</option>
-    </select>
-
-    <!-- Spacer para mapunta sa kanan ang buttons -->
-    <div class="ms-auto d-flex gap-2">
-      <a href="#" class="btn btn-outline-secondary bg-white d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-clock-history"></i> Audit History
-      </a>
-      <a href="{% url 'staff_create_ncr' %}" class="btn btn-crimson d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-plus-lg"></i> Create NCR
-      </a>
-    </div>
-  </div>
-
-  <!-- Collapsible Filter Options -->
-  <div class="collapse mb-4" id="filterOptions">
-    <div class="bg-white p-3 rounded shadow-sm border">
-      <div class="row g-3">
-        <div class="col-12 col-md-3">
-          <label class="form-label small text-muted mb-1">Status</label>
-          <select name="status" class="form-select">
-            <option value="">All Statuses</option>
-            {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label small text-muted mb-1">Cause</label>
-          <select name="cause" class="form-select">
-            <option value="">All Causes</option>
-            {% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label small text-muted mb-1">Project</label>
-          <select name="project" class="form-select">
-            <option value="">All Projects</option>
-            {% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.project_code }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label small text-muted mb-1">Department</label>
-          <select name="department" class="form-select">
-            <option value="">All Departments</option>
-            {% for d in departments %}<option value="{{ d.pk }}" {% if filters.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.department_name }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="col-12 d-flex justify-content-end gap-2 mt-3">
-          <button class="btn btn-crimson px-4" type="submit">Apply Filters</button>
-          <a href="{% url 'staff_records' %}" class="btn btn-outline-secondary">Reset</a>
-        </div>
+    <div class="collapse{% if filter_count %} show{% endif %}" id="filterOptions">
+      <div class="ncr-filter-panel">
+        <div><label class="form-label" for="ncrProject">Project</label><select id="ncrProject" name="project" class="form-select"><option value="">All projects</option>{% for p in projects %}<option value="{{ p.pk }}" {% if filters.project == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.project_name }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="ncrCause">Cause</label><select id="ncrCause" name="cause" class="form-select"><option value="">All causes</option>{% for value, label in cause_choices %}<option value="{{ value }}" {% if filters.cause == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="ncrStatus">Status</label><select id="ncrStatus" name="status" class="form-select"><option value="">All statuses</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="ncrDateFrom">Date raised</label><div class="ncr-date-range"><input id="ncrDateFrom" type="date" name="date_from" value="{{ filters.date_from|default:'' }}" class="form-control" aria-label="Date raised from"><span>–</span><input id="ncrDateTo" type="date" name="date_to" value="{{ filters.date_to|default:'' }}" class="form-control" aria-label="Date raised to"></div></div>
+        <div class="ncr-filter-actions"><a href="{{ clear_filters_url }}" class="btn btn-outline-secondary">Clear all</a><button type="submit" class="btn btn-crimson px-4">Apply filters</button></div>
       </div>
     </div>
-  </div>
 
-  <!-- Main Records Card -->
-  <div class="bg-white rounded-3 shadow-sm border-0 overflow-hidden">
-    <div class="d-none d-lg-grid ncr-grid-header py-3 px-4 border-bottom text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">
-      <div>NCR No.</div>
-      <div>Subject</div>
-      <div>Project</div>
-      <div>Cause</div>
-      <div>Status</div>
-      <div>Date Raised</div>
-      <div class="text-end">Days Open</div>
+    {% if active_filters or filters.q %}
+    <div class="ncr-applied-filters">
+      <span class="ncr-result-count">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }}</span>
+      {% for active_filter in active_filters %}<a class="ncr-filter-chip" href="{{ active_filter.remove_url }}"><span>{{ active_filter.label }}: {{ active_filter.value }}</span><i class="bi bi-x-lg" aria-hidden="true"></i></a>{% endfor %}
+      {% if active_filters %}<a href="{{ clear_filters_url }}" class="ncr-clear-filters-link">Clear all</a>{% endif %}
     </div>
+    {% endif %}
 
-    <div class="list-group list-group-flush">
-      {% for n in page_obj %}
-      <div class="list-group-item list-group-item-action py-3 px-4 border-bottom-0 border-bottom">
-        <div class="row g-0 align-items-center d-lg-grid ncr-grid-row">
-          
-          <div class="col-12 col-lg-auto mb-2 mb-lg-0">
-            <a href="{% url 'ncr_detail' n.pk %}" class="fw-bold text-decoration-none text-crimson" style="font-size: 15px;">
-              {{ n.reference_no }}
-            </a>
-          </div>
-          
-          <div class="col-12 col-lg-auto mb-2 mb-lg-0 pe-lg-3">
-            <div class="fw-semibold text-dark" style="font-size: 14px;">{{ n.subject|truncatechars:60 }}</div>
-            <div class="text-muted small mt-1">Package {{ n.package_no|default:"—" }}</div>
-          </div>
-          
-          <div class="col-6 col-lg-auto mb-2 mb-lg-0 text-dark" style="font-size: 14px;">
-            {{ n.project.project_name }}
-          </div>
-          
-          <div class="col-6 col-lg-auto mb-2 mb-lg-0">
-            <span class="badge badge-cause border-0 px-3 py-2 rounded-pill" style="font-size: 13px;">
-              {{ n.get_cause_display }}
-            </span>
-          </div>
-          
-          <div class="col-6 col-lg-auto mb-2 mb-lg-0">
-            <span class="badge badge-{{ n.status }} border-0 px-3 py-2 rounded-pill" style="font-size: 13px;">
-              <span class="me-1" style="font-size: 8px;">●</span> {{ n.get_status_display }}
-            </span>
-          </div>
-          
-          <div class="col-6 col-lg-auto mb-2 mb-lg-0 text-muted" style="font-size: 14px;">
-            {{ n.issued_date|date:"M d, Y" }}
-          </div>
-          
-          <!-- Days Open -->
-          <div class="col-12 col-lg-auto text-end d-flex justify-content-between justify-content-lg-end align-items-center gap-3">
-            {% if n.status == 'resolved' %}
-              <span class="text-muted">—</span>
-            {% else %}
-              <span class="text-muted" style="font-size: 14px;">
-                {% now "Y-m-d" as today_str %}
-                {% with days=n.issued_date|timesince:today_str %}
-                  {{ days|slice:":-7" }}
-                {% endwith %}
-              </span>
-            {% endif %}
-            <a href="{% url 'ncr_detail' n.pk %}" class="text-muted"><i class="bi bi-chevron-right" style="font-size: 12px;"></i></a>
-          </div>
+    <div class="ncr-records-card">
+      <div class="ncr-table-scroll">
+        <div class="ncr-grid-header">
+          <div>NCR No.</div><div>Subject</div><div>Project</div><div>Cause</div><div>Status</div><div>Date raised</div><div class="text-lg-end">Days open</div><div></div>
+        </div>
+        <div class="ncr-record-list">
+          {% for n in page_obj %}
+          <a href="{% url 'ncr_detail' n.pk %}" class="ncr-record-row text-decoration-none">
+            <div class="ncr-reference">{{ n.reference_no }}</div>
+            <div class="ncr-subject"><span>{{ n.subject|truncatechars:60 }}</span><small>Package {{ n.package_no|default:'—' }}</small></div>
+            <div class="ncr-project">{{ n.project.project_name }}</div>
+            <div><span class="badge badge-cause">{{ n.get_cause_display }}</span></div>
+            <div><span class="badge badge-{{ n.status }}"><span class="ncr-status-dot"></span>{{ n.get_status_display }}</span></div>
+            <div class="ncr-date">{{ n.issued_date|date:'M d, Y'|default:'—' }}</div>
+            <div class="ncr-days">{% if n.status == 'resolved' or n.days_open is None %}—{% else %}{{ n.days_open }} days{% endif %}</div>
+            <div class="ncr-row-chevron"><i class="bi bi-chevron-right"></i></div>
+          </a>
+          {% empty %}
+          <div class="ncr-empty"><i class="bi bi-inbox"></i><span>No NCR records found.</span></div>
+          {% endfor %}
         </div>
       </div>
-      {% empty %}
-      <div class="text-center text-muted py-5">
-        <i class="bi bi-inbox fs-1 mb-2 d-block text-secondary"></i>
-        No NCR records found.
+      <div class="ncr-records-footer">
+        <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs</span>
+        {% include "ncr/_pagination.html" %}
       </div>
-      {% endfor %}
     </div>
-    
-    <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white">
-      <div class="text-muted" style="font-size: 14px;">
-        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} NCRs
-      </div>
-      {% include "ncr/_pagination.html" %}
-    </div>
-  </div>
-</div>
+  </form>
+</section>
 {% endblock %}

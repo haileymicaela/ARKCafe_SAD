@@ -29,7 +29,7 @@
 
       <section class="export-card export-controls d-none" id="section-pdf" aria-labelledby="pdf-heading">
         <h2 id="pdf-heading">Select NCR</h2>
-        <label class="export-field"><span>NCR <b>*</b></span><select name="single_ncr" id="single-ncr"><option value="">Select an NCR...</option>{% for ncr in ncrs %}<option value="{{ ncr.pk }}" data-reference="{{ ncr.reference_no }}" data-attachments="{{ ncr.attachments.count }}">{{ ncr.reference_no }} - {{ ncr.subject|truncatechars:58 }}</option>{% endfor %}</select></label>
+        <label class="export-field"><span>NCR <b>*</b></span><select name="single_ncr" id="single-ncr"><option value="">Select an NCR...</option>{% for ncr in ncrs %}<option value="{{ ncr.pk }}" data-reference="{{ ncr.reference_no }}" data-attachments="{{ ncr.attachments.count }}"{% if selected_ncr_id == ncr.pk|stringformat:'s' %} selected{% endif %}>{{ ncr.reference_no }} - {{ ncr.subject|truncatechars:58 }}</option>{% endfor %}</select></label>
         <fieldset class="export-columns export-pdf-options"><legend>Include in PDF</legend>
           <label class="export-check export-check-wide"><input type="checkbox" name="include_attachments"><span><strong>Photos and attachments</strong><small id="attachment-count">Files from this NCR</small></span></label>
           <label class="export-check export-check-wide"><input type="checkbox" name="include_history"><span><strong>Status history</strong><small>Every status change with date and user</small></span></label>
@@ -60,5 +60,5 @@
     <div class="export-modal-actions"><button type="button" class="export-secondary" id="modal-close">Close</button><a class="export-primary" id="modal-download" href="#" download>Download</a></div>
   </div>
 </div>
-<script src="{% static 'reports/js/export_ncr.js' %}?v=export-v4" defer></script>
+<script src="{% static 'reports/js/export_ncr.js' %}?v=export-v5" defer></script>
 {% endblock %}

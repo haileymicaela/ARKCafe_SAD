@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         {% if request.resolver_match.url_name == 'staff_audit_history' or request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'admin_audit' or request.resolver_match.url_name == 'staff_audit' %}Audit History{% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log{% elif request.resolver_match.url_name == 'staff_export' %}Export NCR{% elif request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}Dashboard
+        {% elif request.resolver_match.url_name == 'staff_records' %}NCR Records - Crimson NCR
+        {% elif request.resolver_match.url_name == 'staff_create_ncr' or request.resolver_match.url_name == 'ncr_edit' %}{% if ncr %}Edit NCR - Crimson NCR{% else %}Create NCR - Crimson NCR{% endif %}
         {% elif request.resolver_match.url_name == 'alert_recipients' %}
             Alert Recipients - Crimson NCR
         {% elif request.resolver_match.url_name == 'admin_departments' %}
@@ -69,6 +71,14 @@
                         {% if request.user.role == 'staff' %}QA/QC{% else %}Admin{% endif %}
                     </li>
 
+                    {% if request.resolver_match.url_name == 'ncr_detail' %}
+                    <li class="breadcrumb-item"><a href="{% url 'staff_records' %}" class="text-decoration-none text-muted">NCR Records</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ ncr.reference_no }}</li>
+                    {% elif request.resolver_match.url_name == 'ncr_edit' and ncr %}
+                    <li class="breadcrumb-item"><a href="{% url 'staff_records' %}" class="text-decoration-none text-muted">NCR Records</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'ncr_detail' ncr.pk %}" class="text-decoration-none text-muted">{{ ncr.reference_no }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit NCR</li>
+                    {% else %}
                     <li class="breadcrumb-item active" aria-current="page">
                         {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}Dashboard
                         {% elif request.resolver_match.url_name == 'project_list' or request.resolver_match.url_name == 'project_add' or request.resolver_match.url_name == 'project_edit' %}Projects
@@ -78,10 +88,11 @@
                         {% elif request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'staff_audit_history' or request.resolver_match.url_name == 'admin_audit' or request.resolver_match.url_name == 'staff_audit' %}Audit History
                         {% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log
                         {% elif request.resolver_match.url_name == 'staff_records' %}NCR Records
-                        {% elif request.resolver_match.url_name == 'staff_create_ncr' %}{% if ncr %}Edit NCR{% else %}Create NCR{% endif %}
+                        {% elif request.resolver_match.url_name == 'staff_create_ncr' or request.resolver_match.url_name == 'ncr_edit' %}{% if ncr %}Edit NCR{% else %}Create NCR{% endif %}
                         {% elif request.resolver_match.url_name == 'staff_export' %}Export NCR
                         {% else %}Dashboard{% endif %}
                     </li>
+                    {% endif %}
                 </ol>
             </nav>
             
@@ -99,6 +110,7 @@
         <!-- Dynamic Page Content -->
         <main class="content-wrapper">
 
+            {% if request.resolver_match.url_name != 'ncr_detail' %}
             <!-- Page Header -->
             <div class="page-header d-flex justify-content-between align-items-start mb-4">
                 <div>
@@ -112,7 +124,7 @@
                         {% elif request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'staff_audit_history' or request.resolver_match.url_name == 'admin_audit' or request.resolver_match.url_name == 'staff_audit' %}Audit History
                         {% elif request.resolver_match.url_name == 'admin_recent_activity' %}Activity Log
                         {% elif request.resolver_match.url_name == 'staff_records' %}NCR Records
-                        {% elif request.resolver_match.url_name == 'staff_create_ncr' %}{% if ncr %}Edit NCR{% else %}Create NCR{% endif %}
+                        {% elif request.resolver_match.url_name == 'staff_create_ncr' or request.resolver_match.url_name == 'ncr_edit' %}{% if ncr %}Edit NCR{% else %}Create NCR{% endif %}
                         {% elif request.resolver_match.url_name == 'staff_export' %}Export NCR
                         {% else %}Dashboard{% endif %}
                     </h1>
@@ -123,8 +135,12 @@
                             Manage the recipients who will receive system alerts and notifications.
                         {% elif request.resolver_match.url_name == 'staff_export' %}
                             Download NCR records as an Excel list or a single PDF report.
-                        {% elif request.resolver_match.url_name == 'staff_create_ncr' %}
-                            {% if ncr %}Update the NCR details and supporting files.{% else %}Record a non-conformance and attach supporting files.{% endif %}
+                        {% elif request.resolver_match.url_name == 'admin_users' %}
+                            Manage who can sign in to the NCR tracking system.
+                        {% elif request.resolver_match.url_name == 'staff_create_ncr' or request.resolver_match.url_name == 'ncr_edit' %}
+                            {% if ncr %}Revise non-conformance report after an inspection finding.{% else %}Log a new non-conformance report after an inspection finding.{% endif %}
+                        {% elif request.resolver_match.url_name == 'staff_records' %}
+                            View, search, and filter all non-conformance reports
                         {% elif request.resolver_match.url_name == 'admin_recent_activity' %}
                             User accounts, projects, departments, and alert recipients
                         {% elif request.resolver_match.url_name == 'admin_audit_history' or request.resolver_match.url_name == 'staff_audit_history' %}
@@ -199,7 +215,23 @@
                 {% if request.resolver_match.url_name == 'admin_recent_activity' %}
                 <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm bg-white shadow-sm activity-desktop-back"><i class="bi bi-chevron-left me-1"></i> Back to Dashboard</a>
                 {% endif %}
+                {% if request.resolver_match.url_name == 'staff_records' %}
+                <div class="d-flex flex-wrap gap-2 staff-records-actions">
+                    <a href="{% url 'staff_audit_history' %}" class="btn staff-audit-button"><i class="bi bi-clock-history me-2"></i>Audit History</a>
+                    <a href="{% url 'staff_create_ncr' %}" class="btn btn-crimson"><i class="bi bi-plus-lg me-2"></i>Create NCR</a>
+                </div>
+                {% endif %}
+                {% if request.resolver_match.url_name == 'project_list' %}
+                <button type="button" class="btn btn-crimson" id="btnAdd"><i class="bi bi-plus-lg me-1"></i>Add Project</button>
+                {% elif request.resolver_match.url_name == 'admin_departments' %}
+                <button type="button" class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg me-1"></i>Add Department</button>
+                {% elif request.resolver_match.url_name == 'admin_users' %}
+                <button type="button" class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg me-1"></i>Add User</button>
+                {% elif request.resolver_match.url_name == 'staff_recipients' or request.resolver_match.url_name == 'admin_recipients' or request.resolver_match.url_name == 'alert_recipients' %}
+                <button type="button" class="btn btn-crimson" id="btnAdd"><i class="bi bi-plus-lg me-1"></i>Add Recipient</button>
+                {% endif %}
             </div>
+            {% endif %}
 
             <!-- Content Placeholder -->
             {% block content %}

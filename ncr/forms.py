@@ -16,7 +16,9 @@ class BootstrapMixin:
     def _style(self):
         for field in self.fields.values():
             widget = field.widget
-            if isinstance(widget, forms.Select):
+            if isinstance(widget, forms.RadioSelect):
+                continue
+            elif isinstance(widget, forms.Select):
                 widget.attrs["class"] = "form-select"
             else:
                 widget.attrs["class"] = "form-control"
@@ -52,22 +54,34 @@ class NcrForm(BootstrapMixin, forms.ModelForm):
         ]
         labels = {
             "package_no": "Package No.",
-            "issued_date": "Issued Date",
+            "issued_date": "Date raised",
             "required_date": "Required Date",
             "cause": "Cause",
+            "department": "Responsible department",
+            "description": "Description of non-conformance",
         }
         widgets = {
+            "package_no": forms.TextInput(attrs={"placeholder": "e.g. PKG-114"}),
+            "subject": forms.TextInput(attrs={"placeholder": "Short summary of the non-conformance"}),
             "issued_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "required_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "description": forms.Textarea(attrs={"rows": 4}),
+            "required_date": forms.DateInput(attrs={"type": "date", "placeholder": "Select date"}, format="%Y-%m-%d"),
+            "description": forms.Textarea(attrs={
+                "rows": 4,
+                "placeholder": "Describe what was found, where, and which approved specification it deviates from...",
+            }),
+            "cause": forms.RadioSelect,
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["project"].queryset = Project.objects.order_by("project_name")
         self.fields["department"].queryset = Department.objects.order_by("department_name")
+        self.fields["project"].empty_label = "Select a project"
+        self.fields["department"].empty_label = "Select department"
         if not self.instance.pk:
             self.fields["issued_date"].initial = timezone.localdate()
+            self.fields["cause"].initial = NcrRecord.CAUSE_CHOICES[0][0]
+        self.fields["issued_date"].disabled = True
         self._style()
 
     def clean_attachments(self):
@@ -93,11 +107,17 @@ class NcrForm(BootstrapMixin, forms.ModelForm):
 
 
 class StatusUpdateForm(BootstrapMixin, forms.Form):
-    new_status = forms.ChoiceField(label="New status")
+    new_status = forms.ChoiceField(label="New status", widget=forms.RadioSelect)
+    resolve_date = forms.DateField(
+        required=False,
+        label="Resolution date",
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
     resolution_type = forms.ChoiceField(
         required=False,
         label="Resolution",
         choices=[("", "Select resolution")] + NcrRecord.RESOLUTION_CHOICES,
+        widget=forms.RadioSelect,
     )
     resolution_note = forms.CharField(
         required=False, label="Resolution note", widget=forms.Textarea(attrs={"rows": 2})
@@ -110,10 +130,13 @@ class StatusUpdateForm(BootstrapMixin, forms.Form):
         super().__init__(*args, **kwargs)
         labels = dict(NcrRecord.STATUS_CHOICES)
         self.fields["new_status"].choices = [(s, labels[s]) for s in allowed_next(ncr.status)]
+        self.fields["resolve_date"].initial = timezone.localdate()
         self._style()
 
     def clean(self):
         data = super().clean()
         if data.get("new_status") == NcrRecord.STATUS_RESOLVED and not data.get("resolution_type"):
             self.add_error("resolution_type", "Choose how this NCR was resolved.")
+        if data.get("new_status") == NcrRecord.STATUS_RESOLVED and not data.get("resolve_date"):
+            data["resolve_date"] = timezone.localdate()
         return data
