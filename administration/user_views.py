@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import User
 from core.decorators import admin_required
+from core.helpers import log_activity
 
 from .user_forms import AdminPasswordResetForm, UserCreateForm, UserEditForm
 
@@ -49,6 +50,8 @@ def admin_users(request):
             add_form = UserCreateForm(request.POST, prefix="add")
             if add_form.is_valid():
                 user = add_form.save()
+                log_activity(request.user, "create", "user", user.pk, user.full_name,
+                             new_value=user.email)
                 messages.success(request, f"Account Created for {user.full_name}")
                 return redirect("admin_users")
             open_modal = "add"
@@ -63,7 +66,22 @@ def admin_users(request):
                     request.POST, instance=target, prefix="edit", acting_user=request.user
                 )
                 if edit_form.is_valid():
+                    old_name = target.full_name
+                    was_active = target.is_active
                     edit_form.save()
+                    changed = ", ".join(edit_form.changed_data)
+                    if changed:
+                        log_activity(
+                            request.user, "update", "user", target.pk, target.full_name,
+                            old_value=old_name,
+                            new_value=f"{target.full_name} ({changed})",
+                        )
+                    if was_active != target.is_active:
+                        status_action = "activate" if target.is_active else "deactivate"
+                        log_activity(request.user, status_action, "user", target.pk,
+                                     target.full_name,
+                                     old_value="active" if was_active else "inactive",
+                                     new_value="active" if target.is_active else "inactive")
                     messages.success(request, f"Changes saved for {target.full_name}")
                     return redirect("admin_users")
                 open_modal = "edit"
@@ -74,6 +92,8 @@ def admin_users(request):
                 if reset_form.is_valid():
                     target.set_password(reset_form.cleaned_data["new_password1"])
                     target.save()
+                    log_activity(request.user, "password_reset", "user", target.pk,
+                                 target.full_name)
                     if is_self:
                         update_session_auth_hash(request, target)
                     messages.success(request, f"Password reset for {target.full_name}")
@@ -87,6 +107,8 @@ def admin_users(request):
                 else:
                     target.is_active = False
                     target.save()
+                    log_activity(request.user, "deactivate", "user", target.pk,
+                                 target.full_name, old_value="active", new_value="inactive")
                     messages.success(request, f"{target.full_name} was deactivated")
                 return redirect("admin_users")
 
@@ -102,6 +124,8 @@ def admin_users(request):
                     name = target.full_name
                     try:
                         target.delete()
+                        log_activity(request.user, "delete", "user", target.pk, name,
+                                     old_value=target.email)
                         messages.success(request, f"Account deleted for {name}")
                     except ProtectedError:
                         messages.error(

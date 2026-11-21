@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 
 from .alert_forms import AlertRecipientForm
 from .models import AlertRecipient
+from core.helpers import log_activity
 
 # Match the template folder you used for projects.html
 TEMPLATE = "administration/alert_recipients.html"
@@ -48,6 +49,7 @@ def recipient_add(request):
     form = AlertRecipientForm(request.POST)
     if form.is_valid():
         obj = form.save()
+        log_activity(request.user, "create", "recipient", obj.pk, obj.name)
         _flash(request, "Recipient added", f"{obj.name} was added successfully")
         return redirect("alert_recipients")
 
@@ -63,7 +65,10 @@ def recipient_edit(request, pk):
 
     form = AlertRecipientForm(request.POST, instance=obj)
     if form.is_valid():
+        old_name = obj.name
         form.save()
+        log_activity(request.user, "update", "recipient", obj.pk, obj.name,
+                     old_value=old_name, new_value=obj.name)
         _flash(request, "Recipient edited", "Your edit was saved successfully")
         return redirect("alert_recipients")
 
@@ -77,5 +82,6 @@ def recipient_delete(request, pk):
     obj = get_object_or_404(AlertRecipient, pk=pk)
     name = obj.name
     obj.delete()
+    log_activity(request.user, "delete", "recipient", obj.pk, name)
     _flash(request, "Recipient removed", f"{name} was removed successfully")
     return redirect("alert_recipients")
