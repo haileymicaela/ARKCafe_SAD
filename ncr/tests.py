@@ -78,7 +78,7 @@ class RecordsTests(NcrBase):
 class CreateTests(NcrBase):
     def test_create_generates_reference_attachment_history_and_sms(self):
         upload = SimpleUploadedFile("photo.png", b"fakepng", content_type="image/png")
-        with mock.patch("ncr.hooks.send_sms") as sms, self.captureOnCommitCallbacks(execute=True):
+        with mock.patch("notifications.services.send_sms") as sms, self.captureOnCommitCallbacks(execute=True):
             resp = self.client.post(reverse("staff_create_ncr"), self.form_data(attachments=upload))
         ncr = NcrRecord.objects.get()
         self.assertRedirects(resp, reverse("ncr_detail", args=[ncr.pk]))
@@ -88,8 +88,12 @@ class CreateTests(NcrBase):
         self.assertEqual(Attachment.objects.filter(ncr=ncr).count(), 1)
         self.assertEqual(AuditLog.objects.filter(ncr=ncr, new_status="open").count(), 1)
         self.assertEqual(ActivityLog.objects.filter(action_type="create").count(), 1)
-        # sms.assert_called_once()  # DISABLED: SMS is not yet part of Part 1
-        # self.assertEqual(sms.call_args[0][0], "09170000000") # DISABLED: SMS is not yet part of Part 1
+        sms.assert_called_once()
+        number, text = sms.call_args[0]
+        self.assertEqual(number, "+639170000000")
+        self.assertIn("New NCR", text)
+        self.assertIn("Bad paint", text)
+        self.assertIn("Workmanship", text)
 
     def test_reference_number_increments(self):
         self.client.post(reverse("staff_create_ncr"), self.form_data())
@@ -145,7 +149,7 @@ class StatusTests(NcrBase):
 
     def test_open_to_in_progress_logs_history_and_sms(self):
         ncr = self.make_ncr()
-        with mock.patch("ncr.hooks.send_sms") as sms, self.captureOnCommitCallbacks(execute=True):
+        with mock.patch("notifications.services.send_sms") as sms, self.captureOnCommitCallbacks(execute=True):
             resp = self.post_status(ncr, new_status="in_progress", remarks="Started")
         self.assertRedirects(resp, reverse("ncr_detail", args=[ncr.pk]))
         ncr.refresh_from_db()
@@ -153,7 +157,9 @@ class StatusTests(NcrBase):
         entry = AuditLog.objects.get(ncr=ncr)
         self.assertEqual((entry.old_status, entry.new_status, entry.remarks), ("open", "in_progress", "Started"))
         self.assertEqual(ActivityLog.objects.filter(action_type="status_change").count(), 1)
-        # sms.assert_called_once()  # DISABLED: SMS is not yet part of Part 1
+        sms.assert_called_once()
+        self.assertIn("In Progress", sms.call_args[0][1])
+        self.assertIn("Remarks: Started", sms.call_args[0][1])
 
     def test_resolve_requires_resolution_type(self):
         ncr = self.make_ncr(status="in_progress")

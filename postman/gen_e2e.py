@@ -12,6 +12,19 @@ def ue(pairs):
 GUARD_HEADER = "// Skip cleanly if an earlier step failed to capture an ID (avoids a 404 cascade)"
 ID_VARS = ("projectId", "departmentId", "ncrId", "ncrRef")
 
+# issued_date is auto-set to today by the server and rendered disabled, so a POSTed
+# value is ignored. Hard-coded required_dates therefore rot: once "today" passes
+# them the form rejects the post with 'Required date cannot be earlier than the
+# issued date' and returns 200 instead of redirecting. Always compute from today.
+DATE_PREREQ = (
+    "// Dates must be relative to today - the server forces issued_date = today\n"
+    "const _p=(n)=>String(n).padStart(2,'0');"
+    "const _f=(d)=>d.getFullYear()+'-'+_p(d.getMonth()+1)+'-'+_p(d.getDate());"
+    "const _n=new Date();"
+    "pm.collectionVariables.set('issuedDate', _f(_n));"
+    "pm.collectionVariables.set('requiredDate', _f(new Date(_n.getTime()+30*86400000)));"
+)
+
 
 def guard_for(path):
     """Pre-request guard for any request whose URL needs a captured ID."""
@@ -262,11 +275,11 @@ e2e_staff = [
          ],
          desc="Needs at least one project and one department in the DB."),
     item("5. Raise a new NCR", "POST", "/staff-create/", headers=[CSRF_HDR], follow=False,
-         prereq=["pm.collectionVariables.set('uniq', Date.now());"],
+         prereq=[DATE_PREREQ, "pm.collectionVariables.set('uniq', Date.now());"],
          body=ue([("project", "{{projectId}}"), ("department", "{{departmentId}}"),
                   ("package_no", "PKG-{{uniq}}"), ("cause", "workmanship"),
                   ("subject", "E2E staff journey NCR {{uniq}}"),
-                  ("issued_date", "2026-01-20"), ("required_date", "2026-02-20"),
+                  ("issued_date", "{{issuedDate}}"), ("required_date", "{{requiredDate}}"),
                   ("description", "Raised end-to-end by the staff journey")]),
          tests=[
              "pm.test('NCR created (302)', () => pm.expect(pm.response.code).to.eql(302));",
@@ -283,7 +296,7 @@ e2e_staff = [
              "// Check the status badge next to THIS NCR's reference, not a substring anywhere on the page",
              "// The flash message repeats the reference before the card; match the title-bar markup instead",
              "pm.test('Status badge is Open', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-open\">\\s*Open/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-open\">[\\s\\S]{0,120}?\\bOpen\\b/));",
          ]),
     item("7. Start work: open -> in_progress", "POST", "/staff-records/{{ncrId}}/",
          headers=[CSRF_HDR], follow=False,
@@ -296,7 +309,7 @@ e2e_staff = [
     item("8. Verify status In Progress", "GET", "/staff-records/{{ncrId}}/",
          tests=[
              "pm.test('Status badge is In Progress', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-in_progress\">\\s*In Progress/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-in_progress\">[\\s\\S]{0,120}?\\bIn Progress\\b/));",
          ]),
     item("9. Resolve the NCR (with resolution type)", "POST", "/staff-records/{{ncrId}}/",
          headers=[CSRF_HDR], follow=False,
@@ -310,7 +323,7 @@ e2e_staff = [
     item("10. Verify Resolved + resolution history logged", "GET", "/staff-records/{{ncrId}}/",
          tests=[
              "pm.test('Status badge is Resolved', () =>",
-             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/span>\\s*<span class=\"badge badge-resolved\">\\s*Resolved/));",
+             "  pm.expect(pm.response.text()).to.match(/NCR-\\d{4}-\\d{4}<\\/h2>\\s*<span class=\"badge badge-resolved\">[\\s\\S]{0,120}?\\bResolved\\b/));",
              "pm.test('History shows journey remarks', () => pm.expect(pm.response.text()).to.match(/E2E journey/));",
          ]),
     item("11. Audit history contains this NCR's reference", "GET", "/staff/audit-history/?q={{ncrRef}}",
