@@ -90,10 +90,11 @@ def admin_departments(request):
             )
 
             department_name = dept.department_name
+            department_id = dept.pk
 
             try:
                 dept.delete()
-                log_activity(request.user, "delete", "department", dept.pk,
+                log_activity(request.user, "delete", "department", department_id,
                              department_name)
 
                 messages.success(

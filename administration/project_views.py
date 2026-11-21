@@ -116,9 +116,10 @@ def project_delete(request, pk):
             f"Can't delete {project.project_code}: linked to {n} NCR records.",
         )
         return redirect("project_list")
+    project_id = project.pk
     try:
         project.delete()
-        log_activity(request.user, "delete", "project", project.pk, project.project_name,
+        log_activity(request.user, "delete", "project", project_id, project.project_name,
                      old_value=project.project_code)
         messages.success(request, "Project deleted.")
     except ProtectedError:
