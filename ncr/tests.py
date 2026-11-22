@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -76,6 +76,7 @@ class RecordsTests(NcrBase):
 
 
 class CreateTests(NcrBase):
+    @override_settings(TEXTBEE_ENABLED=True, TEXTBEE_NOTIFY_ALL_RECIPIENTS=True)
     def test_create_generates_reference_attachment_history_and_sms(self):
         upload = SimpleUploadedFile("photo.png", b"fakepng", content_type="image/png")
         with mock.patch("notifications.services.send_sms") as sms, self.captureOnCommitCallbacks(execute=True):
@@ -147,6 +148,7 @@ class StatusTests(NcrBase):
     def post_status(self, ncr, **data):
         return self.client.post(reverse("ncr_detail", args=[ncr.pk]), data)
 
+    @override_settings(TEXTBEE_ENABLED=True, TEXTBEE_NOTIFY_ALL_RECIPIENTS=True)
     def test_open_to_in_progress_logs_history_and_sms(self):
         ncr = self.make_ncr()
         with mock.patch("notifications.services.send_sms") as sms, self.captureOnCommitCallbacks(execute=True):
