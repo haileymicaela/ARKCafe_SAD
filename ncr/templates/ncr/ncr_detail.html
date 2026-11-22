@@ -13,7 +13,7 @@
       <span class="badge badge-{{ ncr.status }}"><span class="ncr-status-dot"></span>{{ ncr.get_status_display }}</span>
       <p>{{ ncr.subject }}</p>
     </div>
-    <div class="ncr-detail-actions">
+    <div class="ncr-detail-actions staff-records-actions">
       <a href="{% url 'ncr_edit' ncr.pk %}" class="btn btn-crimson">Edit NCR</a>
       <button type="button" class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#updateStatusModal">Update Status</button>
       <a href="{% url 'staff_export' %}?single_ncr={{ ncr.pk }}" class="btn btn-crimson">Export NCR</a>
