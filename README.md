@@ -4,11 +4,11 @@
 
 ### User Manual
 
-**ARKCafe / Team 5**
+**Team 5**
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-6.1-092E20?logo=django&logoColor=white)
-![Database](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
+![Database](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 
 A web-based Non-Conformance Report (NCR) tracking system for QA/QC teams.<br>
 It centralizes NCR reporting, status tracking, audit history, exports, and SMS alerts in one place.
