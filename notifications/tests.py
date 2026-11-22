@@ -78,6 +78,7 @@ class MessageTests(SmsBase):
         self.assertLessEqual(len(messages.ncr_created_message(self.ncr)), messages.MAX_LENGTH)
 
 
+@override_settings(TEXTBEE_ENABLED=True, TEXTBEE_NOTIFY_ALL_RECIPIENTS=True)
 class DispatchTests(SmsBase):
     def test_created_notifies_every_recipient_by_default(self):
         with mock.patch("notifications.services.send_sms") as sms:
@@ -103,8 +104,10 @@ class DispatchTests(SmsBase):
         self.assertIn("Remarks: Started", sms.call_args_list[0].args[1])
 
     def test_sms_failure_is_contained(self):
-        with mock.patch("notifications.services.send_sms", side_effect=TextBeeError("boom")):
+        with mock.patch("notifications.services.send_sms", side_effect=TextBeeError("boom")), \
+             mock.patch("notifications.services.logger.exception") as log:
             services.notify_ncr_created(self.ncr.pk)  # must not raise
+        self.assertTrue(log.called)
 
     def test_missing_ncr_is_ignored(self):
         services.notify_ncr_created(999999)  # must not raise

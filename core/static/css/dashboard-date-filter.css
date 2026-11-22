@@ -1,12 +1,14 @@
 /* Dashboard date range picker, based on the prototype. */
 .dashboard-time-filter { position: relative; z-index: 20; }
-.dashboard-time-filter > summary { list-style: none; cursor: pointer; }
+.dashboard-time-filter > summary { display: inline-flex; min-height: 38px; align-items: center; padding: 6px 12px; border-color: #d5d2d2; border-radius: 8px; box-shadow: none !important; color: #252525; font-size: 11px; font-weight: 600; line-height: 1.5; list-style: none; cursor: pointer; }
+.dashboard-time-filter > summary .bi-calendar3 { font-size: 13px; }
+.dashboard-time-filter > summary .bi-chevron-down { font-size: 10px; }
 .dashboard-time-filter > summary:hover { color: #374151 !important; background-color: #f1f1f1 !important; border-color: #d1d5db !important; }
 .dashboard-time-filter > summary::-webkit-details-marker { display: none; }
 .dashboard-time-menu { position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; width: min(560px, calc(100vw - 20px)); overflow: hidden; background: #fff; border: 1px solid #e6e3e5; border-radius: 10px; box-shadow: 0 12px 32px #211a1a26; }
-.dashboard-date-form { display: grid; grid-template-columns: 120px minmax(0, 1fr); }
+.dashboard-date-form { display: grid; grid-template-columns: 144px minmax(0, 1fr); }
 .dashboard-preset-column { display: flex; flex-direction: column; gap: 2px; padding: 13px 8px; background: #fcfbfb; border-right: 1px solid #efedef; }
-.dashboard-date-caption { padding: 4px 8px 10px; color: #88848a; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.dashboard-date-caption { padding: 4px 8px 10px; color: #69666e; font-size: 13px; font-weight: 400; letter-spacing: normal; text-transform: none; }
 .dashboard-date-preset { width: 100%; padding: 8px; color: #39373b; background: transparent; border: 0; border-radius: 5px; text-align: left; font-size: 12px; white-space: nowrap; cursor: pointer; }
 .dashboard-date-preset:hover, .dashboard-date-preset.is-selected { color: #68161D; background: #f4e8e9; }
 .dashboard-date-preset.is-selected { font-weight: 600; }
@@ -22,7 +24,7 @@
 .dashboard-calendar-day { display: grid; width: 27px; height: 29px; place-items: center; padding: 0; color: #4c484e; background: transparent; border: 0; border-radius: 4px; font-size: 11px; cursor: pointer; }
 .dashboard-calendar-day:hover { background: #f4e8e9; }
 .dashboard-calendar-day.is-in-range { color: #68161D; background: #f4e5e6; border-radius: 0; }
-.dashboard-calendar-day.is-range-start, .dashboard-calendar-day.is-range-end { color: #fff; background: #68161D; border-radius: 5px; }
+.dashboard-calendar-day.is-range-start, .dashboard-calendar-day.is-range-end { color: #fff; background: #68161D; border-radius: 50%; }
 .dashboard-calendar-day.is-today:not(.is-range-start):not(.is-range-end) { outline: 1px solid #68161D; outline-offset: -1px; }
 .dashboard-calendar-day.is-empty { pointer-events: none; }
 .dashboard-date-actions { display: flex; grid-column: 1 / -1; align-items: center; justify-content: flex-end; gap: 8px; min-height: 48px; padding: 8px 12px; border-top: 1px solid #efedef; }

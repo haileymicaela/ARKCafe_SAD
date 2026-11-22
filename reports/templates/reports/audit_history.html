@@ -1,13 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=audit-status-6">
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}?v=mobile-header-1">
+<style>
+  .audit-results-card thead th { font-size:14px; font-weight:500; color:var(--text-muted); white-space:nowrap; }
+</style>
 {% endblock %}
 {% block content %}
 <form method="GET" class="audit-toolbar mb-3">
     <div class="audit-search">
         <button type="submit" class="audit-search-submit" aria-label="Search"><i class="bi bi-search" aria-hidden="true"></i></button>
-        <input id="audit-search-input" type="search" name="q" value="{{ search_query }}" placeholder="Search by NCR no., user, or remarks..." aria-label="Search by NCR number, user, or remarks">
+        <input id="audit-search-input" type="search" name="q" value="{{ search_query }}" placeholder="Search by NCR no., user, or remarks" aria-label="Search by NCR number, user, or remarks">
     </div>
     <input type="hidden" name="ordering" value="{{ ordering }}">
 
@@ -56,12 +59,12 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th class="py-3 px-4 text-muted fw-semibold">Date &amp; time</th>
-                    <th class="py-3 text-muted fw-semibold">NCR no.</th>
-                    <th class="py-3 text-muted fw-semibold">Old status</th>
-                    <th class="py-3 text-muted fw-semibold">New status</th>
-                    <th class="py-3 text-muted fw-semibold">Changed by</th>
-                    <th class="py-3 text-muted fw-semibold">Remarks</th>
+                    <th class="ps-4">Date &amp; Time</th>
+                    <th>NCR No.</th>
+                    <th>Old Status</th>
+                    <th>New Status</th>
+                    <th>Changed by</th>
+                    <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>

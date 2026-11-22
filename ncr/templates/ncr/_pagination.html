@@ -1,29 +1,6 @@
-{% if page_obj.has_other_pages %}
-<ul class="pagination pagination-sm mb-0 justify-content-end">
-  {% if page_obj.has_previous %}
-    <li class="page-item">
-      <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
-        <i class="bi bi-chevron-left"></i>
-      </a>
-    </li>
-  {% endif %}
-
-  {% for num in page_obj.paginator.page_range %}
-    {% if page_obj.number == num %}
-      <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-      <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a></li>
-    {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
-      <li class="page-item disabled"><span class="page-link">...</span></li>
-    {% endif %}
-  {% endfor %}
-
-  {% if page_obj.has_next %}
-    <li class="page-item">
-      <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
-        <i class="bi bi-chevron-right"></i>
-      </a>
-    </li>
-  {% endif %}
-</ul>
-{% endif %}
+<nav class="system-pagination" aria-label="NCR record pages">
+  {% if page_obj.has_previous %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+  {% else %}<span class="is-disabled">Prev</span>{% endif %}
+  {% if page_obj.has_next %}<a class="next-page" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+  {% else %}<span class="next-page is-disabled">Next</span>{% endif %}
+</nav>

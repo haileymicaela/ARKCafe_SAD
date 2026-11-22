@@ -6,10 +6,16 @@ from core.models import Recipient
 
 class AlertRecipientForm(forms.ModelForm):
     mobile_number = forms.CharField(
-        max_length=20,
-        validators=[RegexValidator(r"^\d{11}$", "Enter an 11-digit mobile number.")],
+        max_length=11,
+        validators=[RegexValidator(r"^09\d{9}$", "Enter an 11-digit mobile number starting with 09.")],
         widget=forms.TextInput(
-            attrs={"placeholder": "09XXXXXXXXX", "inputmode": "numeric", "maxlength": "11"}
+            attrs={
+                "type": "tel",
+                "placeholder": "09XXXXXXXXX",
+                "inputmode": "numeric",
+                "maxlength": "11",
+                "pattern": "09[0-9]{9}",
+            }
         ),
     )
 

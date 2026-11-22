@@ -50,6 +50,41 @@
     font-weight: 500;
     color: var(--text-muted);
   }
+  .dept-table { width:100%; table-layout:fixed; }
+  .dept-table th:nth-child(1), .dept-table td:nth-child(1) { width:44%; }
+  .dept-table th:nth-child(2), .dept-table td:nth-child(2) { width:26%; }
+  .dept-table th.admin-actions-header, .dept-table td.admin-actions-cell { width:30%; }
+
+  .department-search { position:relative; }
+  .department-search .bi-search { position:absolute; top:50%; left:14px; z-index:2; color:#6b7280; font-size:14px; transform:translateY(-50%); pointer-events:none; }
+  .department-search .form-control { height:38px; padding-left:38px; border:1px solid #d5d2d2; border-radius:8px; font-size:14px; }
+  .department-search .form-control:focus { border-color:#68161d; box-shadow:none; }
+  .dept-mobile-list { display:none; }
+
+  @media (max-width:575.98px) {
+    .departments-responsive .content-wrapper { padding:16px 18px; }
+    .departments-responsive .page-header { align-items:flex-start !important; gap:8px; margin-bottom:12px !important; padding:0; border:0; }
+    .departments-responsive .page-header > div:first-child { flex:1 1 auto; min-width:0; }
+    .departments-responsive .page-header h1 { margin:0 0 1px; font-size:22px; line-height:1.2; }
+    .departments-responsive .page-header p { margin:0; font-size:14px; line-height:1.35; }
+    .departments-responsive .page-header > button { flex:0 0 auto; height:34px; margin-top:2px; padding:6px 11px; border:0; border-radius:8px; font-size:12px; white-space:nowrap; }
+    .departments-responsive .content-wrapper > .d-flex { margin-bottom:12px !important; }
+    .department-search .form-control { height:42px; padding-left:42px; border-color:#d5d2d2; border-radius:10px; font-size:14px; }
+    .department-search .bi-search { left:16px; }
+    .dept-desktop-table { display:none; }
+    .departments-responsive .card { overflow:visible !important; border:0 !important; background:transparent; box-shadow:none !important; }
+    .dept-mobile-list { display:grid; gap:10px; }
+    .dept-mobile-card { min-width:0; padding:14px; border:1px solid #e2dfe0; border-radius:13px; background:#fff; }
+    .dept-mobile-card-top { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:8px; }
+    .dept-mobile-card-top > strong { min-width:0; overflow-wrap:anywhere; color:#151515; font-size:14px; font-weight:700; line-height:1.25; }
+    .dept-mobile-card .admin-actions-group { flex:0 0 auto; gap:8px; }
+    .dept-mobile-card .admin-actions-group .btn-soft,
+    .dept-mobile-card .admin-actions-group .btn-delete { padding:3px 10px; border-radius:6px; font-size:12px !important; line-height:1.5; }
+    .dept-mobile-count { display:flex; flex-direction:column; gap:2px; margin-top:11px; }
+    .dept-mobile-count span { color:#6b6870; font-size:11px; line-height:1.2; }
+    .dept-mobile-count strong { color:#171717; font-size:14px; font-weight:400; line-height:1.25; }
+    .dept-mobile-empty { padding:24px 14px; border:1px solid #e2dfe0; border-radius:13px; background:#fff; color:#6b6870; text-align:center; font-size:14px; }
+  }
 
   .success-icon {
     width: 52px;
@@ -82,17 +117,14 @@
 <!-- Search -->
 <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
 
-  <form method="get" class="flex-grow-1">
-    <div class="input-group">
-      <span class="input-group-text bg-white">
-        <i class="bi bi-search"></i>
-      </span>
-
+  <form method="get" class="flex-grow-1 department-search">
+    <div>
+      <i class="bi bi-search" aria-hidden="true"></i>
       <input
         type="search"
         name="q"
         value="{{ q }}"
-        class="form-control border-start-0"
+        class="form-control"
         placeholder="Search by department name"
       >
     </div>
@@ -102,7 +134,7 @@
 
 <!-- Departments Table -->
 <div class="card border shadow-sm rounded-3 overflow-hidden">
-  <div class="table-responsive">
+  <div class="table-responsive dept-desktop-table">
 
     <table class="table dept-table align-middle mb-0">
 
@@ -168,6 +200,25 @@
 
     </table>
 
+  </div>
+
+  <div class="dept-mobile-list">
+    {% for d in departments %}
+    <article class="dept-mobile-card">
+      <div class="dept-mobile-card-top">
+        <strong>{{ d.department_name }}</strong>
+        <div class="admin-actions-group">
+          <button type="button" class="btn btn-soft"
+                  data-bs-toggle="modal" data-bs-target="#renameModal"
+                  data-id="{{ d.department_id }}" data-name="{{ d.department_name }}">Rename</button>
+          <button type="button" class="btn btn-delete"
+                  data-bs-toggle="modal" data-bs-target="#deleteModal"
+                  data-id="{{ d.department_id }}" data-name="{{ d.department_name }}">Delete</button>
+        </div>
+      </div>
+      <div class="dept-mobile-count"><span>Recipients</span><strong>{{ d.recipient_count }}</strong></div>
+    </article>
+    {% empty %}<div class="dept-mobile-empty">No departments found.</div>{% endfor %}
   </div>
 </div>
 

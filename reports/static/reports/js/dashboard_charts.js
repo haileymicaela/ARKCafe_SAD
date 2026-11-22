@@ -80,7 +80,25 @@
 
   function render() {
     drawChart('causeChart', 'NCR counts by cause', readData('cause-chart-data'), 'cause');
-    drawChart('projectChart', 'NCR counts by project', readData('project-chart-data'), 'project');
+    const projects = readData('project-chart-data');
+    const pageSize = 5;
+    const pageCount = Math.max(1, Math.ceil(projects.length / pageSize));
+    const chart = document.getElementById('projectChart');
+    let currentPage = Number(chart?.dataset.page || 0);
+    currentPage = Math.min(Math.max(0, currentPage), pageCount - 1);
+    if (chart) chart.dataset.page = String(currentPage);
+    drawChart('projectChart', 'NCR counts by project', projects.slice(currentPage * pageSize, (currentPage + 1) * pageSize), 'project');
+
+    const summary = document.getElementById('projectPageSummary');
+    if (summary) {
+      const first = projects.length ? currentPage * pageSize + 1 : 0;
+      const last = Math.min((currentPage + 1) * pageSize, projects.length);
+      summary.textContent = `Showing ${first}–${last} of ${projects.length} projects`;
+    }
+    const previous = document.getElementById('projectPagePrevious');
+    const next = document.getElementById('projectPageNext');
+    if (previous) previous.disabled = currentPage === 0;
+    if (next) next.disabled = currentPage >= pageCount - 1;
   }
 
   if (document.readyState === 'loading') {
@@ -88,6 +106,17 @@
   } else {
     render();
   }
+
+  document.getElementById('projectPagePrevious')?.addEventListener('click', () => {
+    const chart = document.getElementById('projectChart');
+    if (chart) chart.dataset.page = String(Math.max(0, Number(chart.dataset.page || 0) - 1));
+    render();
+  });
+  document.getElementById('projectPageNext')?.addEventListener('click', () => {
+    const chart = document.getElementById('projectChart');
+    if (chart) chart.dataset.page = String(Number(chart.dataset.page || 0) + 1);
+    render();
+  });
 
   let resizeTimer;
   window.addEventListener('resize', () => {
