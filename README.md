@@ -11,7 +11,7 @@
 ![Database](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 
 <p style="text-align: justify; text-align-last: center;">
-The Crimson NCR Tracking System is a web-based platform for Crimson Inc. that centralizes the entire Non-Conformance Report lifecycle, from the moment an issue is first reported to the moment it is verified and closed. It replaces scattered spreadsheets, email threads, and paper forms with a structured, auditable workflow that keeps the whole team aligned on the same quality record. With every NCR raised, tracked, and documented in one place, issues are resolved faster, audits are met with confidence, and costly reworks are reduced.
+The Crimson NCR Tracking System is a web-based platform for Crimson Group Inc. that centralizes the entire Non-Conformance Report lifecycle, from the moment an issue is first reported to the moment it is verified and closed. It replaces scattered spreadsheets, email threads, and paper forms with a structured, auditable workflow that keeps the whole team aligned on the same quality record. With every NCR raised, tracked, and documented in one place, issues are resolved faster, audits are met with confidence, and costly reworks are reduced.
 </p>
 </div>
 
