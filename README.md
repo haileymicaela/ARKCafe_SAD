@@ -27,6 +27,7 @@
 - [User Roles & Permissions](#user-roles--permissions)
 - [Usage Guide](#usage-guide)
 - [Route Overview](#route-overview)
+- [Database](#database)
 - [API Integration](#api-integration)
 - [Security](#security)
 - [Authors](#authors)
@@ -360,6 +361,32 @@ The application uses server-rendered Django views.
 | `/admin-projects/`, `/admin-departments/`, `/admin-users/` | Admin master-data management |
 | `/admin-recipients/` | Alert recipient management |
 | `/admin/` | Django admin site |
+
+---
+
+<a id="database"></a>
+
+# 🗄️ Database
+
+The system uses **PostgreSQL** hosted on **Render** in production, and SQLite for local development when `DATABASE_URL` is not set.
+
+## Connection Details
+
+| Setting | Value |
+| --- | --- |
+| Host | `dpg-dbsl2e6c6qcc739fm1eg-a.singapore-postgres.render.com` |
+| Port | `5432` |
+| Maintenance Database | `ncr_db_kppg` |
+| Username | `ncr_db_kppg_user` |
+| Password | `olbAS2GUuIhT4z59oSG1tVggMfqioSbx` |
+| SSL Mode | `require` |
+
+**Render External Database URL**
+```bash
+postgresql://ncr_db_kppg_user:olbAS2GUuIhT4z59oSG1tVggMfqioSbx@dpg-dbsl2e6c6qcc739fm1eg-a.singapore-postgres.render.com/ncr_db_kppg
+```
+
+> Connect with pgAdmin, DBeaver, or `psql`. Render requires SSL for external connections.
 
 ---
 
