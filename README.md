@@ -272,8 +272,9 @@ http://127.0.0.1:8000
 
 ---
 
-# 🔑 Demo Accounts - Live Website
 <a id="demo-accounts"></a>
+
+# 🔑 Demo Accounts - Live Website
 
 | Email | Password | Role |
 |---|---|---|
@@ -508,7 +509,7 @@ See `API_Integration_Documentation.md` for the full reference.
 | Name | Role |
 | --- | --- |
 | Diaz, Ashley P. | Fullstack Developer |
-| Lumanglas, Hailey Micaela O. | Tech Lead |
+| Lumanglas, Hailey Micaela O. | Tech Lead, Scrum Master |
 | Macawile, Ariyhanna Venice A. | Fullstack Developer |
 | Ogania, Mycha Izlia B. | Quality Assurance Engineer |
 | Suarez, Allyson S. | Fullstack Developer |
