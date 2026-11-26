@@ -160,8 +160,8 @@ main/
 	.env.example
 	manage.py
 	requirements.txt
-  API_Integration_Documentation.md
-  user-manual.md
+	API_Integration_Documentation.md
+	user-manual.md
 ```
 
 > The project follows a modular Django structure: shared models in `core`, one app per feature area, and templates and static files kept inside each app.
