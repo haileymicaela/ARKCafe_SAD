@@ -1,453 +1,522 @@
-<div align="center">
+<h1 align="center">Crimson NCR Tracking System</h1>
 
-# Crimson NCR Tracking System
-
-### User Manual
-
-**Team 5**
-
-![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-6.1-092E20?logo=django&logoColor=white)
-![Database](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
-
-<p style="text-align: justify; text-align-last: center;">
-The Crimson NCR Tracking System is a web-based platform for Crimson Group Inc. that centralizes the entire Non-Conformance Report lifecycle, from the moment an issue is first reported to the moment it is verified and closed. It replaces scattered spreadsheets, email threads, and paper forms with a structured, auditable workflow that keeps the whole team aligned on the same quality record. With every NCR raised, tracked, and documented in one place, issues are resolved faster, audits are met with confidence, and costly reworks are reduced.
+<p align="center">
+  <strong>
+    A web-based QA/QC platform for raising, tracking, and closing Non-Conformance Reports (NCRs), with audit history, SMS alerts, dashboards, and exports.
+  </strong>
 </p>
-</div>
+
+<p align="center">
+  <a href="https://ncr-tracking-system.onrender.com">
+    <strong>Live Website</strong>
+  </a>
+</p>
 
 ---
 
-## Contents
+<a id="table-of-contents"></a>
 
-- [Overview](#overview)
-- [Getting Started](#getting-started)
-- [Signing In](#signing-in)
-- [Admin Guide](#admin-guide)
-- [Staff Guide](#staff-guide)
-- [NCR Lifecycle](#ncr-lifecycle)
-- [SMS Alerts](#sms-alerts)
-- [Reference](#reference)
-- [Troubleshooting](#troubleshooting)
+# 📚 Table of Contents
+
+- [About the Project](#about-the-project)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Demo Accounts - Live Website](#demo-accounts)
+- [User Roles & Permissions](#user-roles--permissions)
+- [Usage Guide](#usage-guide)
+- [Route Overview](#route-overview)
+- [API Integration](#api-integration)
+- [Security](#security)
+- [Authors](#authors)
+- [License](#license)
 
 ---
 
-## Overview
+<a id="about-the-project"></a>
 
-The system replaces spreadsheet-based NCR tracking with a shared workflow for
-admins and QA/QC staff.
+# 📖 About the Project
 
-| Capability | Description |
-|---|---|
-| **NCR records** | Create, search, filter, edit, and track every NCR |
-| **Status workflow** | Open → In Progress → Resolved, with reopening support |
-| **Audit trail** | Every status change keeps the user, timestamp, and remarks |
-| **Attachments** | Photos and documents attached to each NCR |
-| **SMS alerts** | TextBee notifications on creation and status updates |
-| **Dashboards** | Open/closed totals, resolution rate, cause and project charts |
-| **Exports** | Filtered NCR list to Excel; single NCR report to PDF |
-| **Access control** | Separate Admin and QA/QC Staff roles and menus |
+The **Crimson NCR Tracking System** is a full-stack web application developed for the **QA/QC Department of Crimson Group Incorporated**. It replaces spreadsheets, email threads, and paper forms with one auditable workflow covering the entire NCR lifecycle, from the moment an issue is raised to the moment it is resolved.
 
-### Roles
+The system lets QA/QC staff create and update NCRs with file attachments, notifies responsible people by SMS, and gives administrators dashboards, audit history, and master-data management.
 
-| Role | Main responsibilities |
-|---|---|
-| **Admin** | Manage projects, departments, user accounts, and alert recipients. View dashboards, audit history, and activity. |
-| **Staff (QA/QC)** | Create and manage NCRs, update statuses, manage alert recipients, view dashboards and audit history, export reports. |
+The platform implements **Role-Based Access Control (RBAC)** with dedicated menus and permissions for:
 
-> [NOTE]
-> Admins cannot open staff-only pages and staff cannot open
-> admin-only pages. Each role is redirected to its own dashboard.
+- `ADMIN`
+- `STAFF` (QA/QC)
 
 ---
 
-## Signing In
+<a id="key-features"></a>
 
-1. Open <https://ncr-tracking-system.onrender.com/login/>.
-2. Enter your email address and password.
-3. You are redirected automatically:
-   - **Admin** → Admin Dashboard
-   - **Staff** → Staff Dashboard
+# ✨ Key Features
 
-Email addresses are not case-sensitive. Inactive accounts cannot sign in.
-
-To sign out, use **Log Out** at the bottom of the sidebar. Logging out always
-returns you to the login page.
-
-> [TIP]
-> **Forgot your password?** There is no self-service reset. Ask an administrator
-> to reset it from **User Accounts**.
-
----
-
-## Admin Guide
-
-### Dashboard
-
-The dashboard summarizes the current workload:
-
-- Total **Open** and **Resolved** NCRs
-- Resolution rate
-- NCRs grouped by cause
-- NCRs grouped by project
-- Recent activity feed
-
-### Projects
-
-Use **Projects** to maintain the list of projects available when creating an
-NCR.
-
-| Action | How |
-|---|---|
-| **Add** | Select **Add Project**, fill in name, client, code, and description |
-| **Search** | Use the search box by project name, code, or client |
-| **Edit** | Open the project's **Edit** action and save changes |
-| **Delete** | Use **Delete** on the project row |
-
-> [NOTE]
-> A project that is already linked to NCR records cannot be deleted.
-> NCRs must be reassigned or the project left in place.
-
-### Departments
-
-Departments identify the responsible team for an NCR and the home department of
-alert recipients.
-
-| Action | How |
-|---|---|
-| **Add** | Select **Add Department** and enter a unique name |
-| **Rename** | Use the **Rename** action on a department |
-| **Delete** | Use **Delete** on the department row |
-
-Duplicate names are rejected, regardless of capitalization. A department that
-is still used by recipients or NCR records cannot be deleted.
-
-### User Accounts
-
-Manage Admin and Staff accounts from this page.
-
-| Action | How |
-|---|---|
-| **Add** | Select **Add User**, then enter name, email, department, role, and password |
-| **Edit** | Change name, email, department, role, or active status |
-| **Reset password** | Set a new password for the user |
-| **Deactivate** | Prevent the user from signing in without deleting the account |
-| **Delete** | Permanently remove an account with no records |
-
-Rules enforced by the system:
-
-- Email addresses must be unique.
-- Password confirmation must match.
-- You cannot deactivate or demote your own account.
-- You cannot delete your own account.
-- A user with existing NCRs or activity records cannot be deleted. Deactivate
-  the account instead.
-
-### Alert Recipients
-
-Alert Recipients are the people who receive SMS alerts.
-
-| Field | Notes |
-|---|---|
-| **Name** | Recipient's display name |
-| **Mobile number** | 11 digits, for example `09171234567` |
-| **Department** | Department the recipient belongs to |
-
-Use **Add Recipient**, **Edit**, or **Delete** on the page.
-
-> [IMPORTANT]
-> **Current behavior:** every NCR alert is sent to **all** Alert Recipients,
-> regardless of the NCR's department. Each unique number receives one SMS per
-> event.
-
-### Audit History
-
-The admin **Audit History** page lists every NCR status change.
-
-You can:
-
-- Search by NCR reference, user name, or remarks
-- Filter by status and date range
-- Sort newest or oldest first
-- Move through pages of 10 entries
-
-Each entry shows the NCR, old and new status, the user, the remarks, and the
-date and time of the change.
+* Centralised NCR Records with search, filters, sorting, and pagination
+* Auto-generated Reference Numbers (e.g. `NCR-2026-0001`)
+* Status Workflow: Open → In Progress → Resolved, with reopening support
+* Audit Trail of every status change (user, timestamp, remarks)
+* File Attachments per NCR (PDF, images, Word, Excel)
+* SMS Alerts to recipients through TextBee
+* Role-Based Access Control (User Roles: Admin, Staff)
+* Dashboards with open/resolved totals, resolution rate, and cause/project charts
+* Exports: filtered NCR list to Excel, single NCR report to PDF
+* Admin Management of projects, departments, user accounts, and alert recipients
+* Activity Log for administrators
+* Responsive Design (Compatible with both desktop and mobile device use)
 
 ---
 
-## Staff Guide
+<a id="tech-stack"></a>
 
-### Dashboard
+# 🛠️ Tech Stack
 
-The staff dashboard shows the same operational summary as the admin dashboard:
-
-- Open and resolved NCR counts
-- Resolution rate
-- Cause and project charts
-- Recent activity
-
-### NCR Records
-
-**NCR Records** is the main working list.
-
-| Feature | Description |
-|---|---|
-| **Search** | Search by NCR number, subject, package number, project name, or project code |
-| **Filters** | Filter by project, cause, status, and date raised |
-| **Sort** | Switch between newest first and oldest first |
-| **Days open** | Days since the NCR was raised (hidden for resolved NCRs) |
-| **Pagination** | 10 NCRs per page |
-
-Select any row to open the NCR detail page.
-
-> [NOTE]
-> All staff accounts can view all NCR records. Visibility is shared
-> across the QA/QC team rather than limited to the creator.
-
-### Creating an NCR
-
-Select **Create NCR** and complete the form.
-
-| Field | Required | Notes |
-|---|:---:|---|
-| **Project** | Yes | Project the NCR belongs to |
-| **Package No.** | No | Example: `PKG-114` |
-| **Reference No.** | Auto | Generated when saved, for example `NCR-2026-0001` |
-| **Issued date** | Auto | Set to today's date |
-| **Subject** | Yes | Short summary of the non-conformance |
-| **Cause** | Yes | Material, Workmanship, or Sequencing |
-| **Department** | Yes | Responsible department |
-| **Required date** | Yes | Cannot be earlier than the issued date |
-| **Description** | No | What was found, where, and which specification was affected |
-| **Attachments** | No | Up to 15 files, maximum 5 MB each |
-
-Allowed attachment types: PDF, PNG, JPG/JPEG, Word, and Excel.
-
-When the NCR is saved:
-
-- Status is set to **Open**
-- A reference number is generated
-- An audit entry and activity entry are created
-- An SMS alert is sent if SMS is enabled
-
-### NCR Detail
-
-The detail page shows:
-
-- Reference number, status, and subject
-- Project, package, department, and dates
-- Cause and description
-- Resolution details when resolved
-- Attachments
-- Full status history with remarks
-
-From this page you can **Edit NCR**, **Update Status**, or **Export NCR**.
-
-### Updating status
-
-Select **Update Status** to open the status form.
-
-| New status | What to provide |
-|---|---|
-| **In Progress** | Remarks describing the action taken |
-| **Resolved** | Resolution type, resolution date, resolution note, and remarks |
-| **Open** | Only when reopening a resolved NCR; remarks explain why |
-
-**Resolution types:**
-
-| Type | Meaning |
-|---|---|
-| **Replaced** | The non-conforming item was replaced |
-| **Reapproved** | The item was accepted after review or rework |
-| **Closed** | The NCR is closed without replacement |
-
-A resolved NCR can be reopened. Reopening clears the previous resolution type,
-note, and date.
-
-### Attachments
-
-- Download an attachment by selecting its file name.
-- Delete an attachment while editing the NCR.
-- Each file must be 5 MB or smaller.
-- Up to 15 files can be uploaded at a time.
-- Only PDF, image, Word, and Excel files are accepted.
-
-### Export
-
-Open **Export** from the sidebar. Two formats are available.
-
-#### NCR List (Excel)
-
-1. Choose the filters: project, package number, cause, status, and date range.
-2. Select at least one column to include.
-3. Select **Export to Excel**.
-
-The file is named `NCR-List_<date>.xlsx` and contains only the matching records.
-
-Available columns:
-
-`NCR No.`, `Subject`, `Project`, `Package No.`, `Cause`, `Status`,
-`Date Raised`, `Date Resolved`, `Days Open`, `Department`, `Created By`.
-
-#### Single NCR (PDF)
-
-1. Select the **Single NCR (PDF)** tab.
-2. Choose an NCR.
-3. Optionally include attachments, status history, and resolution details.
-4. Select **Export to PDF**.
-
-The file is named after the NCR reference, for example `NCR-2026-0001.pdf`.
-
-### Audit History
-
-Staff can search and filter the same NCR audit history as admins:
-
-- Search by NCR reference, user, or remarks
-- Filter by status and date range
-- Sort newest or oldest first
-
-### Alert Recipients
-
-Staff can also view and maintain **Alert Recipients** from the sidebar. Add,
-edit, or remove recipients and their 11-digit mobile numbers. Every recipient
-receives NCR alerts when SMS is enabled.
+| Layer | Technologies |
+| --- | --- |
+| Frontend | Django Templates, Bootstrap 5, Bootstrap Icons, vanilla JavaScript (SVG charts) |
+| Backend | Django 6.1, Python 3.12+ |
+| Database | PostgreSQL (SQLite for local development), `dj-database-url`, `psycopg2` |
+| Authentication | Django custom user model (email login) + Role-Based Access |
+| SMS | TextBee (Android SMS gateway) |
+| Deployment | Render (web service + PostgreSQL), Gunicorn, WhiteNoise |
+| CI/CD | GitHub Actions |
+| Testing | Django test suite, Postman (E2E, integration, security) |
+| Tools | Git, GitHub, VS Code |
 
 ---
 
-## NCR Lifecycle
+<a id="project-structure"></a>
 
-### Status definitions
+# 🗂️ Project Structure
 
-| Status | Meaning |
-|---|---|
-| **Open** | The NCR has been raised and is awaiting action |
-| **In Progress** | Work to correct the non-conformance has started |
-| **Resolved** | The non-conformance has been corrected and documented |
-
-### Allowed transitions
-
-| From | To | Notes |
-|---|---|---|
-| Open | In Progress | Start work and add remarks |
-| Open | Resolved | Resolve directly, with resolution details |
-| In Progress | Resolved | Complete the work and record the resolution |
-| Resolved | Open | Reopen if the issue returns |
-
-Every transition creates an audit entry. Status changes also send an SMS alert
-when SMS is enabled.
-
----
-
-## SMS Alerts
-
-### When alerts are sent
-
-| Event | Message contents |
-|---|---|
-| **New NCR** | Reference, subject, cause, description |
-| **Status → In Progress** | Reference, new status, remarks |
-| **Status → Resolved** | Reference, new status, resolution type, resolution note, remarks |
-| **Status → Open (reopened)** | Reference, new status, remarks |
-
-Example new-NCR message:
-
-```text
-[NCR] New NCR-2026-0001 (PRJ-001)
-Subject: Cracked weld on column C4
-Cause: Workmanship
-Description: Weld toe crack found during visual inspection
+```bash
+main/
+	config/
+		settings.py
+		urls.py
+		wsgi.py
+		asgi.py
+	core/
+		decorators.py
+		helpers.py
+		models.py
+		static/
+		templates/
+			base.html
+			admin_sidebar.html
+			staff_sidebar.html
+	accounts/
+		models.py
+		forms.py
+		views.py
+		urls.py
+		templates/accounts/login.html
+	ncr/
+		forms.py
+		hooks.py
+		services.py
+		views.py
+		urls.py
+		static/ncr/
+		templates/ncr/
+			records.html
+			ncr_form.html
+			ncr_detail.html
+	administration/
+		alert_views.py
+		project_views.py
+		user_views.py
+		views.py
+		urls.py
+		templates/administration/
+			alert_recipients.html
+			departments.html
+			projects.html
+			users.html
+	reports/
+		views.py
+		urls.py
+		static/reports/
+			css/
+			js/
+		templates/reports/
+			dashboard.html
+			audit_history.html
+			recent_activity.html
+			export_ncr.html
+	notifications/
+		textbee.py
+		services.py
+		messages.py
+		management/commands/
+			check_textbee.py
+			send_test_sms.py
+	postman/
+		ARKCafe-E2E.postman_collection.json
+		ARKCafe-Integration.postman_collection.json
+		ARKCafe-Security.postman_collection.json
+	.github/workflows/ci.yml
+	.env.example
+	manage.py
+	requirements.txt
+  API_Integration_Documentation.md
+  user-manual.md
 ```
 
-### Who receives alerts
-
-By default, every number on the **Alert Recipients** page receives each alert.
-If the same number appears more than once, it is only sent once.
-
-### Delivery behavior
-
-- Messages are sent after the NCR is saved successfully.
-- A failed SMS never blocks or rolls back an NCR save.
-- Failures are written to the server log.
-- There is no automatic retry; a failed message is not sent later.
-- Each recipient counts as one message against the TextBee plan limit.
-- When the TextBee quota is exhausted, NCRs still work normally.
+> The project follows a modular Django structure: shared models in `core`, one app per feature area, and templates and static files kept inside each app.
 
 ---
 
-## Reference
+<a id="getting-started"></a>
 
-### NCR fields
+# 🚀 Getting Started
 
-| Field | Description |
-|---|---|
-| **Reference No.** | Auto-generated unique NCR number |
-| **Project** | Project where the non-conformance was found |
-| **Package No.** | Optional package identifier |
-| **Subject** | Short NCR title |
-| **Description** | Detailed description of the issue |
-| **Cause** | Material, Workmanship, or Sequencing |
-| **Department** | Responsible department |
-| **Status** | Open, In Progress, or Resolved |
-| **Resolution type** | Replaced, Reapproved, or Closed |
-| **Resolution note** | Explanation of how the issue was resolved |
-| **Issued date** | Date the NCR was raised |
-| **Required date** | Target completion date |
-| **Resolve date** | Date the NCR was resolved |
+## Prerequisites
 
-### Cause definitions
+Before running the project locally, make sure the following are installed:
 
-| Cause | Typical meaning |
-|---|---|
-| **Material** | Deviates from the approved specification or uses an unapproved equivalent |
-| **Workmanship** | Finishing or punch-list defect |
-| **Sequencing** | Surface closed before MEP trades finished |
-
-### File limits
-
-| Rule | Value |
-|---|---|
-| Maximum file size | 5 MB per file |
-| Maximum files per upload | 15 |
-| Allowed extensions | `.pdf`, `.png`, `.jpg`, `.jpeg`, `.doc`, `.docx`, `.xls`, `.xlsx` |
+- Python `3.12+`
+- pip
+- PostgreSQL (optional, SQLite is used when `DATABASE_URL` is not set)
+- Git
 
 ---
 
-## Troubleshooting
+## Installation
 
-### I cannot sign in
+### 1. Clone the Repository
 
-- Check that the email address is correct. It is not case-sensitive.
-- Confirm the account is active. An admin can reactivate it from **User Accounts**.
-- Ask an admin to reset your password if necessary.
-- Staff and Admin accounts are separate roles; each lands on its own dashboard.
+```bash
+git clone https://github.com/haileymicaela/CrimsonCompany.git
 
-### I am redirected when opening a page
-
-This is expected. Admins cannot open staff-only pages, and staff cannot open
-admin-only pages. Use the sidebar for your role.
-
-### SMS is not received
-
-Check the following in order:
-
-1. **Recipients exist** — the Alert Recipients page has at least one entry.
-2. **The phone has SMS permission and load** — the SIM can send normal texts.
-3. **The quota is not exhausted** — TextBee shows the remaining plan limit.
-
-If a recipient is missing from the list, no message is sent to that person.
-
-### Export fails
-
-- **Excel:** select at least one column.
-- **PDF:** select an NCR first.
-- **No records:** widen the date range or clear filters.
-- **Unexpected format error:** choose either Excel or PDF, not a custom value.
+cd CrimsonCompany
+```
 
 ---
 
-<div align="center">
+### 2. Create and Activate a Virtual Environment
 
-**Crimson NCR Tracking System** — Team 5
+```bash
+python -m venv venv
 
-</div>
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+```
+
+---
+
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 4. Create Environment Variables
+
+Copy the example file and fill in your values.
+
+```bash
+cp .env.example .env
+```
+
+Example:
+
+```env
+SECRET_KEY=
+DEBUG=True
+DATABASE_URL=
+
+TEXTBEE_ENABLED=True
+TEXTBEE_API_KEY=
+TEXTBEE_DEVICE_ID=
+```
+
+> Do not commit real environment variables or API keys to GitHub. Set `TEXTBEE_DRY_RUN=True` to log messages instead of sending them while testing.
+
+---
+
+### 5. Run Database Migrations
+
+```bash
+python manage.py migrate
+```
+
+---
+
+### 6. Create an Admin Account
+
+```bash
+python manage.py createsuperuser
+```
+
+---
+
+### 7. Start the Development Server
+
+```bash
+python manage.py runserver
+```
+
+Open the application:
+
+```bash
+http://127.0.0.1:8000
+```
+> The root URL redirects to the login page, and signed-in users are sent to their role's dashboard.
+
+---
+
+# 🔑 Demo Accounts - Live Website
+<a id="demo-accounts"></a>
+
+| Email | Password | Role |
+|---|---|---|
+| admin@crimson.group | crimsonadmin1 | Admin |
+| yvaine_deluna@crimson.group | crimsonstaff1 | Staff |
+| tanya_sy@crimson.group | crimsonstaff1 | Staff |
+
+---
+
+# 👥 User Roles & Permissions
+<a id="user-roles--permissions"></a>
+
+| Feature / Access | ADMIN | STAFF |
+| --- | --- | --- |
+| Login Authentication | ✅ | ✅ |
+| View Dashboard | ✅ | ✅ |
+| View Audit History | ✅ | ✅ |
+| Create / Edit NCRs | ❌ | ✅ |
+| Update NCR Status | ❌ | ✅ |
+| Manage Attachments | ❌ | ✅ |
+| Export NCRs (Excel / PDF) | ❌ | ✅ |
+| Manage Alert Recipients | ✅ | ✅ |
+| Manage Projects | ✅ | ❌ |
+| Manage Departments | ✅ | ❌ |
+| Manage User Accounts | ✅ | ❌ |
+| View Activity Log | ✅ | ❌ |
+
+## Administrative Distinctions
+
+- `ADMIN` manages master data (projects, departments, users) and oversees dashboards, audit history, and activity.
+- `STAFF` (QA/QC) handles day-to-day NCR work: creating NCRs, updating statuses, and exporting reports.
+- Each role is redirected to its own dashboard, and cannot open the other role's pages.
+
+---
+
+<a id="usage-guide"></a>
+
+# 🧭 Usage Guide
+> For detailed, step-by-step instructions, see the [User Manual](user-manual.md).
+
+## Staff Workflow
+
+1. Login using your email and password.
+2. Open **Create NCR**, select the project, and fill in the subject, cause, department, and required date.
+3. Attach supporting files (optional) and save. A reference number is generated and an SMS alert is sent.
+4. Use **Update Status** on the NCR detail page as work progresses, adding remarks each time.
+5. When resolved, record the resolution type, date, and note.
+6. Export reports from **Export** (Excel list or single-NCR PDF).
+
+## Admin Workflow
+
+1. Login using an admin account.
+2. Maintain **Projects**, **Departments**, and **User Accounts**.
+3. Maintain **Alert Recipients** (11-digit mobile numbers).
+4. Monitor the dashboard, audit history, and activity log.
+
+## NCR Fields
+
+| Field | Notes |
+| --- | --- |
+| Reference No. | Auto-generated (`NCR-<year>-<number>`) |
+| Project / Package No. | Project is required; package number is optional |
+| Subject | Short summary of the non-conformance |
+| Cause | Material, Workmanship, or Sequencing |
+| Department | Responsible department |
+| Required Date | Cannot be earlier than the issued date |
+| Attachments | Up to 15 files, 5 MB each (`.pdf`, `.png`, `.jpg`, `.jpeg`, `.doc`, `.docx`, `.xls`, `.xlsx`) |
+
+---
+
+<a id="route-overview"></a>
+
+# 🔌 Route Overview
+
+The application uses server-rendered Django views.
+
+| Route Group | Description |
+| --- | --- |
+| `/login/`, `/logout/` | Authentication |
+| `/staff-records/`, `/staff-create/` | NCR list, creation, detail, edit, and attachments |
+| `/staff/dashboard/`, `/staff/audit-history/`, `/staff/export/` | Staff reports and exports |
+| `/reports/admin/...` | Admin dashboard, audit history, and activity log |
+| `/admin-projects/`, `/admin-departments/`, `/admin-users/` | Admin master-data management |
+| `/admin-recipients/` | Alert recipient management |
+| `/admin/` | Django admin site |
+
+---
+
+<a id="api-integration"></a>
+
+# 🔗 API Integration
+
+The system does not expose its own REST API. It consumes one external API, **[TextBee](https://textbee.dev)**, an Android SMS gateway, to send SMS alerts to alert recipients. All calls are made server-side from `notifications/textbee.py`, so the API key never reaches the browser.
+
+**Base URL:** `https://api.textbee.dev/api/v1`
+
+## When SMS Is Sent
+
+| Event | Message contents |
+| --- | --- |
+| New NCR created | Reference, subject, cause, description |
+| Status → In Progress | Reference, new status, remarks |
+| Status → Resolved | Reference, new status, resolution type, resolution note, remarks |
+| Status → Open (reopened) | Reference, new status, remarks |
+
+By default, every unique number on the **Alert Recipients** page receives each alert. Set `TEXTBEE_NOTIFY_ALL_RECIPIENTS=False` to notify only recipients in the NCR's department.
+
+## Endpoints Used
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/gateway/send-sms` | Sends an NCR alert through the registered Android phone |
+| `GET` | `/gateway/devices` | Verifies the API key and lists devices (used by `check_textbee`) |
+
+### `POST /gateway/send-sms`
+
+**Headers**
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `x-api-key` | Yes | TextBee API key from the dashboard |
+| `Content-Type` | Yes | `application/json` |
+
+**Request Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `recipients` | string[] | Yes | Numbers in international format, e.g. `+639171234567` |
+| `message` | string | Yes | SMS content |
+| `deviceId` | string | No | Sending phone; defaults to the account's default device |
+
+**Example Request**
+
+```bash
+curl -X POST "https://api.textbee.dev/api/v1/gateway/send-sms" \
+  -H "x-api-key: $TEXTBEE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipients": ["+639171234567"],
+    "message": "[NCR] New NCR-2026-0001 (PRJ-001)\nSubject: Cracked weld on column C4\nCause: Workmanship"
+  }'
+```
+
+**Example Response** (`200 OK`)
+
+```json
+{
+  "data": {
+    "success": true,
+    "message": "SMS added to queue for processing",
+    "smsBatchId": "66b1f2c3a4d5e6f7a8b9c0d2",
+    "recipientCount": 1
+  }
+}
+```
+
+> A `200` response means TextBee queued the message, not that the carrier delivered it.
+
+### Error Codes
+
+| Code | Meaning |
+| --- | --- |
+| `400` | Invalid recipient, no enabled device, or message could not be pushed to the phone |
+| `401` | API key is missing, invalid, or revoked |
+| `404` | Device or resource not found |
+| `429` | Plan limit reached; nothing was sent |
+
+## Configuration
+
+```env
+TEXTBEE_ENABLED=True
+TEXTBEE_API_KEY=txb_your_api_key_here
+TEXTBEE_DEVICE_ID=your_device_id_here
+```
+
+| Variable | Description |
+| --- | --- |
+| `TEXTBEE_ENABLED` | Master switch; `False` skips sending |
+| `TEXTBEE_API_KEY` | Authenticates requests to TextBee |
+| `TEXTBEE_DEVICE_ID` | Selects the sending Android phone |
+| `TEXTBEE_NOTIFY_ALL_RECIPIENTS` | `True` alerts every recipient; `False` limits alerts to the NCR's department |
+| `TEXTBEE_DRY_RUN` | Logs messages instead of sending them |
+
+## Behavior
+
+- Local numbers (e.g. `09171234567`) are converted to `+639171234567` before sending.
+- SMS is sent after the NCR is saved, so a failed SMS never blocks or rolls back an NCR.
+- Failures are logged per recipient, and one bad number does not stop the others.
+- There is no automatic retry.
+
+Verify your setup with:
+
+```bash
+python manage.py check_textbee
+python manage.py send_test_sms 09171234567
+```
+
+See `API_Integration_Documentation.md` for the full reference.
+
+---
+
+<a id="security"></a>
+
+# 🛡️ Security
+
+## Security Best Practices
+
+- Never expose `.env` files publicly.
+- Set a strong `SECRET_KEY` and `DEBUG=False` in production.
+- Restrict admin credentials to authorized users only.
+- Rotate sensitive credentials (including the TextBee API key) regularly.
+- Use HTTPS in production deployments.
+
+## Built-in Protections
+
+- Passwords are hashed and validated with Django's password validators.
+- Inactive accounts cannot sign in; admins cannot deactivate, demote, or delete themselves.
+- Role-based decorators restrict every admin and staff page.
+- CSRF protection is enabled on all forms.
+- Attachments are limited by size and file type.
+
+## Important Notice
+
+> Demo or development credentials should never be reused in production environments.
+
+---
+
+<a id="authors"></a>
+
+# 👨‍💻 Authors
+
+| Name | Role |
+| --- | --- |
+| Diaz, Ashley P. | Fullstack Developer |
+| Lumanglas, Hailey Micaela O. | Tech Lead |
+| Macawile, Ariyhanna Venice A. | Fullstack Developer |
+| Ogania, Mycha Izlia B. | Quality Assurance Engineer |
+| Suarez, Allyson S. | Fullstack Developer |
+
+---
+
+<a id="license"></a>
+
+# 📄 License
+
+This project is currently proprietary and is intended for academic use unless otherwise stated by the project owners.
